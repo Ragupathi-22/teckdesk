@@ -1,0 +1,79 @@
+<div class="space-y-6">
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
+    <p class="text-gray-600">Overview of assets and tickets</p>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <label for="company" class="text-sm text-gray-700">Company:</label>
+<select
+  class="..."
+  [value]="selectedCompanyId"
+  (change)="onSwitchCompany($event)"
+>
+  <option *ngFor="let company of companies" [value]="company.id">
+    {{ company.name }}
+  </option>
+</select>
+
+  </div>
+</div>
+
+
+  <!-- Asset Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <app-stat-card
+      [title]="'Total Assets'"
+      [value]="assetStats().total"
+      [icon]="getStatConfig('Total Assets', 0, 'Total').icon"
+      [colorClass]="getStatConfig('Total Assets', 0, 'Total').colorClass"
+    />
+    <app-stat-card
+      [title]="'Assigned'"
+      [value]="assetStats().assigned"
+      [icon]="getStatConfig('Assigned', 0, 'Assigned').icon"
+      [colorClass]="getStatConfig('Assigned', 0, 'Assigned').colorClass"
+    />
+    <app-stat-card
+      [title]="'In Stock'"
+      [value]="assetStats().inStock"
+      [icon]="getStatConfig('In Stock', 0, 'In Stock').icon"
+      [colorClass]="getStatConfig('In Stock', 0, 'In Stock').colorClass"
+    />
+    <app-stat-card
+      [title]="'Under Repair'"
+      [value]="assetStats().underRepair"
+      [icon]="getStatConfig('Under Repair', 0, 'Under Repair').icon"
+      [colorClass]="getStatConfig('Under Repair', 0, 'Under Repair').colorClass"
+    />
+  </div>
+
+  <!-- Ticket Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+    <app-stat-card
+      [title]="'Open Tickets'"
+      [value]="ticketStats().open"
+      [icon]="getStatConfig('Open', 0, 'Open').icon"
+      [colorClass]="getStatConfig('Open', 0, 'Open').colorClass"
+    />
+    <app-stat-card
+      [title]="'In Progress'"
+      [value]="ticketStats().inProgress"
+      [icon]="getStatConfig('In Progress', 0, 'In Progress').icon"
+      [colorClass]="getStatConfig('In Progress', 0, 'In Progress').colorClass"
+    />
+    <app-stat-card
+      [title]="'Resolved'"
+      [value]="ticketStats().resolved"
+      [icon]="getStatConfig('Resolved', 0, 'Resolved').icon"
+      [colorClass]="getStatConfig('Resolved', 0, 'Resolved').colorClass"
+    />
+    <app-stat-card
+      [title]="'New Today'"
+      [value]="ticketStats().newToday"
+      [icon]="getStatConfig('New Today', 0, 'NewToday').icon"
+      [colorClass]="getStatConfig('New Today', 0, 'NewToday').colorClass"
+    />
+  </div>
+</div>

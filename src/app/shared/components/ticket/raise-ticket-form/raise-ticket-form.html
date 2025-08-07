@@ -1,0 +1,68 @@
+<!-- <div class="fixed inset-0 bg-gray-300 bg-opacity-50 flex items-center justify-center z-50 overflow-auto"> -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4  sm:px-6 py-6">
+
+  <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Raise New Ticket</h3>
+
+    <div class="space-y-4">
+      <!-- Category -->
+      <label class="block text-sm text-gray-700 font-medium">Category *</label>
+      <select class="w-full border border-gray-300 rounded-md p-2" [(ngModel)]="form().category"
+        (ngModelChange)="updateCategory($event)">
+        <option value="">Select Category</option>
+        <option *ngFor="let cat of categories()" [value]="cat.category">{{ cat.category }}</option>
+      </select>
+
+      <!-- Title -->
+      <label class="block text-sm text-gray-700 font-medium">Title *</label>
+      <input type="text" class="w-full border border-gray-300 rounded-md p-2" [(ngModel)]="form().title"
+        (ngModelChange)="updateTitle($event)" />
+
+      <!-- Description -->
+      <label class="block text-sm text-gray-700 font-medium">Description *</label>
+      <textarea class="w-full border border-gray-300 rounded-md p-2" rows="3" [(ngModel)]="form().description"
+        (ngModelChange)="updateDescription($event)"></textarea>
+
+      <!-- Asset -->
+      <label class="block text-sm text-gray-700 font-medium">Select Asset *</label>
+      <select class="w-full border border-gray-300 rounded-md p-2" [(ngModel)]="form().assetTag"
+        (ngModelChange)="updateAssetTag($event)">
+        <option value="" disabled>Select an asset</option>
+        <option *ngFor="let asset of assets()" [value]="asset.tag">
+          {{ asset.name }} ({{ asset.tag }})
+        </option>
+      </select>
+
+      <!-- Image Upload -->
+      <label class="block text-sm text-gray-700 font-medium">Upload Issue Images</label>
+      <div class="flex items-center text-sm">
+      <input type="file"  (change)="handleImageUpload($event)"  [disabled]="uploading()"/>
+      <div  class="text-sm text-red-500">{{imageUrls().length}}/5</div></div>
+      <div *ngIf="uploading()" class="text-sm text-blue-500">Uploading...</div>
+
+      <!-- Uploaded Image Preview -->
+      <div class="grid grid-cols-3 gap-2 mt-2">
+        <div *ngFor="let img of imageUrls()" class="relative group">
+          <img [src]="img" alt="Uploaded" class="w-full h-20 object-cover rounded-md border border-gray-300" />
+          <button
+            class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-bl hover:bg-red-700"
+            (click)="deleteImage(img)"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3 mt-6">
+        <button (click)="handleClose()"
+          class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+          Cancel
+        </button>
+        <button (click)="handleSubmit()"
+          class="px-4 py-2 bg-indigo-600 rounded-md text-sm text-white hover:bg-indigo-700">
+          Submit Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

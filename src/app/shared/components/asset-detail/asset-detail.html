@@ -1,0 +1,44 @@
+<!-- Overlay -->
+<!-- <div class="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"> -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4  sm:px-6 py-6">
+
+  <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">Asset Details</h2>
+      <button (click)="onClose()" class="text-gray-600 hover:text-red-500">
+        <lucide-icon [name]="LucideIcon.X" class="w-5 h-5" />
+      </button>
+    </div>
+
+    <!-- Details -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div><strong>Name:</strong> {{ asset?.name }}</div>
+      <div><strong>Model:</strong> {{ asset?.model }}</div>
+      <div><strong>Tag Number:</strong> {{ asset?.tag }}</div>
+      <div><strong>Status:</strong> {{ asset?.status }}</div>
+      <div><strong>Assigned To:</strong> {{ asset?.assignedToName || '-' }}</div>
+      <div><strong>Operating System:</strong> {{ asset?.os }}</div>
+      <div><strong>RAM:</strong> {{ asset?.ram }}</div>
+      <div><strong>Drive:</strong> {{ asset?.drive }}</div>
+      <div><strong>Serial Number:</strong> {{ asset?.serialNumber }}</div>
+      <div><strong>Purchase Date:</strong> {{ asset?.purchaseDate ? (asset?.purchaseDate | date:'mediumDate') : '-' }}</div>
+    </div>
+
+    <div class="mt-4">
+      <strong>History:</strong>
+      <p class="whitespace-pre-line text-gray-700">{{ asset?.history || '-' }}</p>
+    </div>
+
+    <div class="mt-2">
+      <strong>Peripherals:</strong>
+      <p class="whitespace-pre-line text-gray-700">{{ asset?.peripherals || '-' }}</p>
+    </div>
+
+    <!-- Close Button (optional) -->
+    <div class="mt-6 text-right">
+      <button (click)="onClose()" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md text-sm">Close</button>
+    </div>
+  </div>
+</div>

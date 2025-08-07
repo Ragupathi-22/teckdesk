@@ -1,0 +1,49 @@
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
+import { LucideIconCollection } from '../../../shared/icons/lucide-icons';
+import { DataService } from '../../../core/services/data.service';
+
+@Component({
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterLink, LucideAngularModule],
+  templateUrl: './sidebar.html',
+})
+export class SidebarComponent {
+  LucideIcons = LucideIconCollection;
+  private dataService = inject(DataService);
+
+  role = this.dataService.getRole();
+  company = this.dataService.getCompany()?.name;
+
+  @Input() isOpen = true;              // Controls visibility
+  @Input() isMobile = false;           // Used to decide if backdrop should show
+  @Output() closeSidebar = new EventEmitter<void>();
+
+  navItems = [
+    { to: '/admin/dashboard', icon: this.LucideIcons.LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/assets', icon: this.LucideIcons.Monitor, label: 'Assets', adminOnly: true },
+    { to: '/admin/users', icon: this.LucideIcons.Users, label: 'Users', adminOnly: true },
+    { to: '/admin/tickets', icon: this.LucideIcons.Ticket, label: 'Tickets' ,adminOnly: true},
+    { to: '/employee/my-assets', icon: this.LucideIcons.Laptop, label: 'My Assets', employeeOnly: true },
+    { to: '/employee/ticket', icon: this.LucideIcons.Ticket, label: 'Ticket' ,employeeOnly: true},
+
+  ];
+
+  logout() {
+    this.dataService.logOut();
+  }
+
+  isVisible(item: any): boolean {
+    return (
+      (!item.adminOnly || this.role === 'admin') &&
+      (!item.employeeOnly || this.role === 'employee')
+    );
+  }
+
+  handleBackdropClick() {
+    this.closeSidebar.emit();
+  }
+}

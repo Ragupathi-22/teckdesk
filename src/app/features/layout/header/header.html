@@ -1,0 +1,66 @@
+<header
+  class="bg-white shadow-sm px-4 py-3 flex items-center justify-between md:px-6 relative"
+  (document:click)="handleClickOutside($event)"
+>
+  <!-- Left: Mobile Hamburger -->
+  <button class="md:hidden p-2 text-gray-600" (click)="toggleSidebar.emit()">
+    <lucide-icon [name]="LucideIcon.Menu" class="w-6 h-6" />
+  </button>
+
+  <!-- Center: Company Name & Title -->
+  <div class="text-center flex-1">
+    <div class="text-sm md:text-lg font-semibold text-gray-800 truncate">
+      {{ dataService.getCompany()?.name || 'Company' }}
+    </div>
+    <div class="text-xs md:text-sm text-gray-500 leading-tight">
+      IT Asset Management
+    </div>
+  </div>
+
+  <!-- Right: Desktop Profile Info (always visible) -->
+  <div class="hidden md:flex items-center space-x-2 shrink-0">
+    <div
+      class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white"
+    >
+      <lucide-icon [name]="LucideIcon.Users" class="w-4 h-4" />
+    </div>
+    <div class="flex flex-col leading-tight">
+      <span class="text-sm font-semibold text-gray-800 truncate max-w-[140px]">
+        {{ user?.displayName || 'User' }}
+      </span>
+      <span class="text-xs text-indigo-700 truncate max-w-[160px]">
+        {{ user?.email }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Right: Mobile Profile Icon with Popover -->
+  <div class="relative md:hidden" #profileContainer>
+    <button class="flex items-center space-x-2 shrink-0" (click)="toggleProfile()">
+      <div
+        class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white"
+      >
+        <lucide-icon [name]="LucideIcon.Users" class="w-4 h-4" />
+      </div>
+    </button>
+
+    <div
+      *ngIf="showProfile"
+      class="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 p-3 z-50"
+    >
+      <div class="flex items-center space-x-3">
+        <div
+          class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white"
+        >
+          <lucide-icon [name]="LucideIcon.Users" class="w-5 h-5" />
+        </div>
+        <div class="flex flex-col text-sm">
+          <span class="font-semibold text-gray-800">
+            {{ user?.displayName }}
+          </span>
+          <span class="text-indigo-700 text-xs">{{ user?.email }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

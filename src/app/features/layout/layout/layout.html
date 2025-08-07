@@ -1,0 +1,23 @@
+<div class="flex h-screen bg-gray-100">
+  <!-- Sidebar -->
+  <div
+    class="fixed z-30 inset-y-0 left-0 w-64 md:static md:block transition-transform duration-200 ease-in-out bg-indigo-800"
+    [class.-translate-x-full]="!isSidebarOpen && isMobile"
+    [class.translate-x-0]="isSidebarOpen || !isMobile"
+  >
+    <app-sidebar
+      [isMobile]="isMobile"
+      (closeSidebar)="closeSidebar()"
+    />
+  </div>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <app-header
+      (toggleSidebar)="toggleSidebar()"
+    />
+    <main class="flex-1 overflow-y-auto p-4">
+      <router-outlet />
+    </main>
+  </div>
+</div>

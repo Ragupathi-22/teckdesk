@@ -1,0 +1,172 @@
+<!-- <div class="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-50 overflow-auto"> -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4  sm:px-6 py-6">
+
+  <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <h3 class="text-lg font-medium text-gray-900">Ticket #{{ ticket.id }}</h3>
+        <p class="text-sm text-gray-500">{{ formattedTimestamp | date: 'medium' }}</p>
+      </div>
+      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+        [ngStyle]="{ 'background-color': ticketStatusColor, 'color': 'white' }">
+        {{ ticket.status }}
+      </span>
+    </div>
+
+    <!-- Ticket Info -->
+    <div class="bg-gray-50 p-4 rounded-md mb-4">
+      <div class="flex justify-between">
+        <h4 class="font-medium text-gray-900">{{ ticket.title }}</h4>
+        <span class="text-sm text-gray-500">{{ ticket.category }}</span>
+      </div>
+      <p class="mt-2 text-gray-700 max-h-40 overflow-auto">{{ ticket.description }}</p>
+      <div class="mt-3 text-sm text-gray-500">Raised by: {{ ticket.raisedByName }}</div>
+      <div class="mt-1 text-sm text-gray-500">Asset: {{ ticket.assetTag }}</div>
+    </div>
+
+    <!-- Uploaded Images -->
+    <div *ngIf="imageUrls.length > 0" class="mt-4 pb-2">
+      <h4 class="text-sm font-medium text-gray-700 mb-2">Uploaded Images</h4>
+      <div class="flex space-x-4 overflow-x-auto">
+        <img *ngFor="let img of imageUrls" [src]="img" alt="Ticket image"
+          class="h-32 w-32 object-cover border rounded shadow cursor-pointer hover:scale-105 transition"
+          (click)="openImagePopup(img)" />
+      </div>
+    </div>
+
+    <!-- Admin Only: Status Dropdown -->
+    <div *ngIf="isAdmin" class="my-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
+      <select [(ngModel)]="updatedStatus" class="w-full border border-gray-300 rounded-md shadow-sm p-2">
+        <option value="">-- Select --</option>
+        <option *ngFor="let s of statusList" [value]="s.status">{{ s.status }}</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Add Comment</label>
+      <textarea [(ngModel)]="newComment" class="w-full border border-gray-300 rounded-md shadow-sm p-2"
+        rows="3"></textarea>
+    </div>
+
+    <!-- Activity History Section with Tabs -->
+    <div class="border-t border-gray-200 pt-4 mt-4">
+      <h4 class="text-sm font-semibold text-gray-700 mb-3">Activity History</h4>
+
+      <!-- Tabs -->
+      <div class="flex space-x-2 mb-4">
+        <button class="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-full transition border"
+          [ngClass]="{
+        'bg-indigo-100 text-indigo-800 border-indigo-400': activeTab === 'status',
+        'bg-white text-gray-600 border-gray-300': activeTab !== 'status'
+      }" (click)="activeTab = 'status'">
+          <lucide-icon [name]="LucideIcons.History" class="w-4 h-4"></lucide-icon>
+          <span>Status</span>
+        </button>
+
+        <button class="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-full transition border"
+          [ngClass]="{
+        'bg-indigo-100 text-indigo-800 border-indigo-400': activeTab === 'comments',
+        'bg-white text-gray-600 border-gray-300': activeTab !== 'comments'
+      }" (click)="activeTab = 'comments'">
+          <lucide-icon [name]="LucideIcons.MessageCircle" class="w-4 h-4"></lucide-icon>
+          <span>Comments</span>
+          <span
+            class="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold bg-indigo-600 text-white rounded-full">
+            {{ comments.length }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Tab Content Wrapper -->
+      <div class="max-h-72 overflow-y-auto space-y-4 pr-1">
+
+        <!-- Status Logs -->
+        <div *ngIf="activeTab === 'status'" class="space-y-3">
+          <div *ngFor="let log of statusLogs; let i = index" class="relative pl-6">
+            <!-- Vertical Line -->
+            <div *ngIf="i < statusLogs.length - 1" class="absolute left-3 top-10 h-full border-l-2 border-gray-300">
+            </div>
+
+            <!-- Bullet Icon -->
+            <div
+              class="absolute left-0 top-2 h-6 w-6 rounded-full  text-white flex items-center justify-center text-xs font-semibold"
+              [ngClass]="log.isAdmin ? 'bg-blue-500' : 'bg-gray-300' "
+              >
+              {{ log.updatedByName[0] | uppercase}}
+            </div>
+
+            <!-- Log Content -->
+            <div class="ml-2">
+              <p class="text-sm font-medium">{{ log.updatedByName }}</p>
+              <p class="text-sm text-gray-700">
+                {{ i === 0 && log.updatedByName !== 'admin'
+                ? log.updatedByName + ' created the ticket'
+                : 'Status changed to ' + log.status }}
+              </p>
+              <p class="text-xs text-gray-500">{{ log.timestamp?.toDate() | date: 'medium' }}</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Comments -->
+        <div *ngIf="activeTab === 'comments'" class="space-y-3">
+          <div *ngIf="comments.length === 0" class="text-sm text-gray-500">No comments yet.</div>
+          <div *ngFor="let comment of comments; let i = index" class="relative pl-6">
+            <div *ngIf="i < comments.length - 1" class="absolute left-3 top-10 h-full border-l-2 border-gray-300"></div>
+
+            <div
+              class="absolute left-0 top-2 h-6 w-6 rounded-full text-gray-800 flex items-center justify-center text-xs font-semibold"
+              [ngClass]="comment.isAdmin ? 'bg-blue-500' : 'bg-gray-300'">
+              {{ comment.updatedByName[0] | uppercase}}
+            </div>
+
+
+            <div class="ml-2">
+              <p class="text-sm font-medium">{{ comment.updatedByName }}</p>
+              <p class="text-sm text-gray-700">{{ comment.message }}</p>
+              <p class="text-xs text-gray-500">{{ comment.timestamp?.toDate() | date: 'medium' }}</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- Footer Buttons -->
+    <div class="flex justify-end space-x-3 mt-6">
+      <button (click)="close.emit()"
+        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+        Close
+      </button>
+
+      <button *ngIf="isAdmin" (click)="onAdminSubmit()"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+        Save Changes
+      </button>
+
+      <button *ngIf="!isAdmin" (click)="onEmployeeComment()"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+        Add Comment
+      </button>
+
+    </div>
+
+    <!-- Image Popup -->
+    <div *ngIf="popupImage" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+      <div class="relative">
+        <img [src]="popupImage" class="max-h-screen max-w-full rounded-lg shadow-lg" />
+        <button (click)="popupImage = null"
+          class="absolute top-2 right-2 bg-white text-black rounded-full p-1 shadow hover:bg-gray-200">
+          <lucide-icon [name]="LucideIcons.XCircle" />
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

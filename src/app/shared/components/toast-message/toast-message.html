@@ -1,0 +1,13 @@
+<!-- src/app/shared/components/toast-message/toast-message.component.html -->
+<div class="toast-container">
+  @for (toast of toasts; track $index) {
+  <div
+    class="toast"
+    [ngClass]="toast.type"
+    (click)="removeToast(toast)"
+  >
+    <strong class="title">{{ toast.title }}</strong>
+    <span class="message">{{ toast.message }}</span>
+  </div>
+}
+</div>
