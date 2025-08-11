@@ -1,1 +1,71 @@
-<p>employee-dashboard works!</p>
+<div class="p-6 space-y-6">
+  <!-- Page Heading -->
+  <h1 class="text-2xl font-bold text-gray-800">Employee Dashboard</h1>
+
+  <!-- Row with Two Columns -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Ticket Stats Column -->
+    <div class="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Ticket Stats</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Total Tickets -->
+        <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition transform hover:-translate-y-1">
+          <app-stat-card [title]="'My Tickets'" [value]="myTicketsCount"
+            [icon]="getStatConfig('My Tickets', 0, 'My Tickets').icon"
+            [colorClass]="getStatConfig('My Tickets', 0, 'My Tickets').colorClass" />
+        </div>
+
+        <!-- Pending Tickets -->
+        <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition transform hover:-translate-y-1">
+                    <app-stat-card [title]="'Pending Tickets'" [value]="pendingTicketsCount"
+            [icon]="getStatConfig('Pending Tickets', 0, 'Pending Tickets').icon"
+            [colorClass]="getStatConfig('Pending Tickets', 0, 'Pending Tickets').colorClass" />
+        </div>
+
+        <!-- My Assets -->
+        <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition transform hover:-translate-y-1">
+          <app-stat-card [title]="'My Assets'" [value]="myAssetsCount"
+            [icon]="getStatConfig('My Assets', 0, 'My Assets').icon"
+            [colorClass]="getStatConfig('My Assets', 0, 'My Assets').colorClass" />
+        </div>
+
+        <!-- Placeholder for extra stat -->
+        <!-- <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition transform hover:-translate-y-1">
+          <app-stat-card [title]="'Resolved Tickets'" [value]="myTicketsCount - pendingTicketsCount"
+            [icon]="getStatConfig('Resolved Tickets', 0, 'Resolved Tickets').icon"
+            [colorClass]="getStatConfig('Resolved Tickets', 0, 'Resolved Tickets').colorClass" />
+          
+        </div> -->
+      </div>
+    </div>
+
+    <!-- Employee Details Column -->
+    <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Employee Details</h3>
+      <div class="space-y-3 text-gray-700">
+        <div class="flex justify-between border-b pb-2">
+          <span class="font-medium">Name:</span>
+          <span>{{ employee?.name }}</span>
+        </div>
+        <div class="flex justify-between border-b pb-2">
+          <span class="font-medium">Email:</span>
+          <span>{{ employee?.email }}</span>
+        </div>
+        <div class="flex justify-between border-b pb-2">
+          <span class="font-medium">Team:</span>
+          <span>{{ employee?.team }}</span>
+        </div>
+        <div class="flex justify-between border-b pb-2">
+          <span class="font-medium">Role:</span>
+          <span class="capitalize">{{ employee?.role || 'N/A' }}</span>
+        </div>
+        <div class="flex justify-between border-b pb-2">
+          <span class="font-medium">Date of Joining:</span>
+          <span>{{ employee?.dateOfJoining  }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

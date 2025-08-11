@@ -80,8 +80,10 @@ export class TicketService {
 
   async getAdminEmails(): Promise<string[]> {
     try {
-      const mailRef = collection(db, 'mailAdmins');
-      const q = query(mailRef, where('isActive', '==', true));
+      const mailRef = collection(db, 'admin');
+      const q = query(mailRef, 
+        where('isActive', '==', true)
+      );
       const snapshot = await getDocs(q);
       const emails = snapshot.docs
         .map(doc => doc.data()?.['email'])

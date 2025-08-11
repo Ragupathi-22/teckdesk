@@ -97,7 +97,7 @@ export class AdminTickets implements OnInit, OnDestroy {
   async filterAndEnrichTickets() {
     const formValue = this.filterForm.value;
     const rawTickets = this.allTickets();
-
+    this.loadingTable.set(true);
     // Filter: status, category
     let filtered = rawTickets;
     if (formValue.status) filtered = filtered.filter(t => t.status === formValue.status);
@@ -151,6 +151,7 @@ export class AdminTickets implements OnInit, OnDestroy {
     );
 
     this.tickets.set(enriched);
+    this.loadingTable.set(false);
   }
 
   async viewTicketDetail(ticket: Ticket) {

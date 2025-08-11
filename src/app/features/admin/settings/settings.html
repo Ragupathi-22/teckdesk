@@ -1,0 +1,37 @@
+<div class="p-6">
+  <h1 class="text-2xl font-bold mb-4">Settings</h1>
+
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-300 mb-4">
+    <!-- Company Settings Tab -->
+    <button 
+      (click)="activeTab.set('company')" 
+      [class.border-blue-500]="activeTab() === 'company'" 
+      class="px-4 py-2 -mb-px border-b-2 hover:text-blue-500"
+    >
+      Company Settings
+    </button>
+
+    <!-- Admin Settings Tab -->
+    <!-- <button 
+      (click)="activeTab.set('adminSetting')" 
+      [class.border-blue-500]="activeTab() === 'adminSetting'" 
+      class="px-4 py-2 -mb-px border-b-2 hover:text-blue-500"
+    >
+      Admin Settings
+    </button> -->
+  </div>
+
+  <!-- Active Tab Content -->
+  <div>
+    <app-company-settings *ngIf="activeTab() === 'company'"></app-company-settings>
+  </div>
+
+
+  <!-- @if (activeTab()==='adminSetting') {
+    <div >
+     <p>admin</p>
+     
+    </div>
+  } -->
+</div>

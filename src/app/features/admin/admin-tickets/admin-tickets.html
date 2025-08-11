@@ -33,9 +33,11 @@
             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="">All Status</option>
-            <option *ngFor="let status of ticketStatusColors" [value]="status.status">
+            @for (status of ticketStatusColors; track $index) {
+            <option  [value]="status.status">
               {{ status.status }}
             </option>
+          }
           </select>
         </div>
 
@@ -47,7 +49,9 @@
             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="">All Categories</option>
-            <option *ngFor="let category of categories()" [value]="category.category">{{ category.category }}</option>
+            @for (category of categories(); track $index) {
+            <option  [value]="category.category">{{ category.category }}</option>
+          }
           </select>
         </div>
 
@@ -59,7 +63,9 @@
             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="">All Teams</option>
-            <option *ngFor="let team of teams()" [value]="team.team">{{ team.team }}</option>
+            @for (team of teams(); track $index) {
+            <option  [value]="team.team">{{ team.team }}</option>
+            }
           </select>
         </div>
 

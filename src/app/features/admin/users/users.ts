@@ -27,13 +27,13 @@ import {
   catchError,
   tap
 } from 'rxjs/operators';
-import { AuthService } from '../../../core/auth/auth.service';
 import { db } from '../../../firebase.config'; // ✅ your firestore instance
 import { environment } from '../../../../environment';
 import { LoadingService } from '../../../shared/service/loading.service';
 import { UserModel } from '../../../core/models/user.model';
 import { MailService } from '../../../shared/service/mail.service';
 import { ConfirmDialogService } from '../../../shared/service/confirm-dialog.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-user-management',
@@ -89,6 +89,7 @@ export class Users implements OnInit {
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       team: ['', Validators.required],
+      dateOfJoining :['']
     });
   }
 
@@ -276,12 +277,7 @@ export class Users implements OnInit {
       }
     };
 
-
-
   }
-
-
-
 
   editUser(user: any) {
     this.editingUserId = user.id;
@@ -289,6 +285,7 @@ export class Users implements OnInit {
       name: user.name,
       email: user.email,
       team: user.team,
+      dateOfJoining :user.dateOfJoining,
       role: 'employee'
     });
 
@@ -299,7 +296,7 @@ export class Users implements OnInit {
   }
 
 
-  async deleteUser(userId: string,username :string) {
+  async deleteUser(userId: string, username: string) {
 
     const confirmed = await this.confirmService.show(
       'Delete User',
@@ -372,21 +369,56 @@ export class Users implements OnInit {
   }
 
 
+  //For Excel
 
+  generateExcel() {
+    try {
+      this.loadingService.show();
 
-  private async ensureEmployeesCollection(): Promise<void> {
-    const ref = collection(db, 'employees');
-    const snapshot = await getDocs(ref);
-    if (snapshot.empty) {
-      const defaultUser = {
-        name: 'Test Employee',
-        email: 'test@company.com',
-        team: 'General',
-        role: 'employee',
-        companyId: this.selectedCompany?.id || 'DEFAULT_CODE',
-      };
-      await addDoc(ref, defaultUser);
-      this.toastr.success('Default employee created');
+      const users = this.filteredUsers();
+
+      const dataForExcel = users.map(user => ({
+        Name: user.name || '',
+        Email: user.email || '',
+        Team: user.team || '',
+        Role: user.role || '',
+        Date_Of_Join : user.dateOfJoining || ''
+      }));
+
+      const worksheet = XLSX.utils.aoa_to_sheet([
+        ['User Details'],
+        [`Team Filter: ${this.filterTeamControl.value || 'All'}`],
+        [`Generated on: ${new Date().toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        })}`]
+
+      ]);
+
+      XLSX.utils.sheet_add_json(worksheet, dataForExcel, { origin: 'A4' });
+
+      const totalCols = Object.keys(dataForExcel[0] || {}).length;
+      worksheet['!merges'] = worksheet['!merges'] || [];
+      worksheet['!merges'].push({
+        s: { r: 0, c: 0 },
+        e: { r: 0, c: totalCols - 1 }
+      });
+
+      worksheet['!cols'] = Array(totalCols).fill({ wch: 20 });
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `users_${dateStr}.xlsx`);
+
+    } catch (err) {
+      console.error(err);
+      this.toastr.error('Failed to generate Excel');
+    } finally {
+      this.loadingService.hide();
     }
   }
+
 }

@@ -43,7 +43,6 @@ export class DataService {
   return this.lookup.companies();
 }
 
-
   getCompany(): Company | undefined {
     const id = this.getCompanyId();
     return id ? this.lookup.getCompanyById(id) : undefined;

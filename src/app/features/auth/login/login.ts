@@ -24,6 +24,7 @@ export class Login implements OnInit {
   toastr = inject(ToastService);
   loading = inject(LoadingService);
   lucideIcon = LucideIconCollection;
+  showPassword=false;
 
   form!: FormGroup;
   isLoading = false;

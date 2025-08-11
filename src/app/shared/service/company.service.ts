@@ -1,8 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { AssetStatus, Company, Team, TicketCategory, TicketStatus } from '../../core/models/company.models';
 import { db } from '../../firebase.config';
 import { LoadingService } from './loading.service';
+import { DEFAULT_COMPANY_DATA } from '../../core/models/company-defaults';
 
 
 @Injectable({ providedIn: 'root' })
@@ -67,18 +68,46 @@ export class LookupService {
           code: data.code,
           name: data.name,
           isActive: data.isActive,
-          sortOrder: data.sortOrder,
+          sortOrder :data.sortOrder,
           empPass :data.empPass,
           teams,
           assetStatus,
           ticketStatus,
           ticketCategory,
+
         };
       });
 
       this._companies.set(companies);
     } catch (err) {
       console.error('Error fetching companies:', err);
+    } finally {
+      this.loading.hide();
+    }
+  }
+
+  async createCompany(companyData: Partial<Company> = {}): Promise<string | null> {
+    this.loading.show();
+    try {
+      // Merge provided data with default
+      const dataToSave: Omit<Company, 'id'> = {
+        ...DEFAULT_COMPANY_DATA,
+        ...companyData,
+      };
+
+      const docRef = await addDoc(collection(db, 'companies'), dataToSave);
+      
+      // Update local state immediately
+      this._companies.update((prev) => [
+        ...prev,
+        { id: docRef.id, ...dataToSave },
+      ]);
+
+      console.log(`Company created with ID: ${docRef.id}`);
+      return docRef.id;
+    } catch (err) {
+      console.error('Error creating company:', err);
+      return null;
     } finally {
       this.loading.hide();
     }

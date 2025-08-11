@@ -1,94 +1,125 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Component, EventEmitter, Output, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { environment } from '../../../../environment';
+import { db } from '../../../firebase.config';
+import { MailService } from '../../../shared/service/mail.service';
+import { ToastService } from '../../../shared/service/toast.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { LucideIconCollection } from '../../../shared/icons/lucide-icons';
-import { LookupService } from '../../../shared/service/company.service';
-import { Company } from '../../../core/models/company.models';
-import { AdminRegisterService } from '../../../core/auth/admin_register';
-import { getAuthErrorMessage } from '../../../shared/service/auth-error.mapper';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
-  selector: 'app-register',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, LucideAngularModule],
+  selector: 'app-admin-register',
   templateUrl: './admin-register.html',
+  imports: [LucideAngularModule, ReactiveFormsModule,CommonModule]
 })
-export class RegisterComponent  {
+export class AdminRegister {
   LucideIcon = LucideIconCollection;
 
-  private fb = inject(FormBuilder);
-  private auth = inject(AdminRegisterService);
-  private router = inject(Router);
-  // private lookup = inject(LookupService);
+  @Output() close = new EventEmitter<void>();
 
-  isLoading = signal(false);
-  error = signal<string | null>(null);
+  loadingForm = signal(false);
+  showPassword = false;
 
-  // companies = signal<Company[]>([]);
-  // companiesLoading = signal(true);
-  // companiesError = signal<string | null>(null);
+  adminForm;
 
-  form = this.fb.group({
-    name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
-    // store the company doc id (e.g., MTPL) in the form
-    // company: ['', Validators.required],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    confirmPassword: ['', Validators.required],
-  });
+  constructor(
+    private fb: FormBuilder,
+    private toastr: ToastService,
+    private mailService: MailService
+  ) {
+    this.adminForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+    });
+  }
 
-  // async ngOnInit() {
-  //   try {
-  //     await this.lookup.init(); // ensures it loads only once
-  //     this.companies.set(this.lookup.companies() ?? []);
-  //     // default to first active company if none selected
-  //     if (!this.form.controls.company.value && this.companies().length) {
-  //       this.form.controls.company.setValue(this.companies()[0].id);
-  //     }
-  //   } catch (e: any) {
-  //     console.error(e);
-  //     this.companiesError.set('Failed to load companies');
-  //   } finally {
-  //     this.companiesLoading.set(false);
-  //   }
-  // }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
+  closeForm() {
+    this.close.emit();
+  }
 
   async onSubmit() {
-    if (this.form.invalid || this.passwordMismatch()) return;
+    if (this.adminForm.invalid) {
+      this.toastr.error('Please fill all required fields correctly.');
+      return;
+    }
 
-    this.isLoading.set(true);
-    this.error.set(null);
+    this.loadingForm.set(true);
 
-    const { name, email, password } = this.form.getRawValue();
-
+    const { name, email, password } = this.adminForm.value;
     try {
-      await this.auth.register(email!, password!, {
-        name: name!,
-        email: email!,
-        role: 'admin',
-      });
-      this.router.navigate(['/dashboard']);
-    } catch (err: any) {
+      // Step 1: Register via PHP to avoid logout
+      const res = await fetch(`${environment.Base_API}register-user.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      }).then(r => r.json());
+
+      if (res.success && res.uid) {
+        this.toastr.success('Admin registered successfully.');
+        return this.addAdminToFirestore(res.uid, email!, password!,name!);
+
+      } else if (res.code === 'EMAIL_EXISTS') {
+        this.toastr.error('Email already exists.');
+      } else {
+        this.toastr.error('Registration failed.');
+      }
+
+    } catch (err) {
       console.error(err);
-      this.error.set(getAuthErrorMessage(err));
+      this.toastr.error('Error during registration.');
     } finally {
-      this.isLoading.set(false);
+      this.loadingForm.set(false);
     }
   }
 
-  passwordMismatch(): boolean {
-    const { password, confirmPassword } = this.form.value;
-    return password !== confirmPassword;
-  }
+  private async addAdminToFirestore(uid: string, email: string, password: string,name:string) {
+    try {
 
-  isDisabled(): boolean {
-    return (
-      this.form.invalid ||
-      this.passwordMismatch() ||
-      this.isLoading() 
-    );
+      await setDoc(doc(db, 'admin', uid), {
+            uid: uid,
+            name: name,
+            email: email,
+            role: 'admin', 
+            mailFromEmployee :true,
+            mailToEmployeeForRegister:true,
+            mailToEmployeeForTicket :true,        
+            isActive: true,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        });
+
+      this.mailService.mailToAdminForAccountCreation(
+        email,
+        email,
+        password,
+        environment.LiveSiteURLForEmployee
+      )?.subscribe({
+        next: res => {
+          if (res.success) {
+            this.toastr.success('Mail sent to admin.');
+          } else {
+            console.warn('Mail sending failed:', res.error);
+          }
+        },
+        error: err => {
+          console.error('Mail error:', err);
+        }
+      });
+
+      this.toastr.success('Admin added to Firestore.');
+      this.closeForm();
+    } catch(e) {
+      console.log(e);
+      this.toastr.error('Failed to add admin to Firestore.');
+    }
   }
 }

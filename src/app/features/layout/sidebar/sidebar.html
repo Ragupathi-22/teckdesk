@@ -26,7 +26,8 @@
         <li *ngIf="isVisible(item)">
           <a
             [routerLink]="item.to"
-            routerLinkActive="bg-indigo-700"
+            routerLinkActive="bg-indigo-700 font-semibold"
+            [routerLinkActiveOptions]="{ exact: true }"
             (click)="isMobile && closeSidebar.emit()"
             class="flex items-center p-2 rounded-md hover:bg-indigo-700 transition-colors"
           >

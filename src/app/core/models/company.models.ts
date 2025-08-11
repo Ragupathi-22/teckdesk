@@ -28,7 +28,7 @@ export interface Company {
   code: string;
   name: string;
   isActive: boolean;
-  sortOrder: number;
+  sortOrder :number;
   empPass: string;
   teams: Team[];
   assetStatus: AssetStatus[];

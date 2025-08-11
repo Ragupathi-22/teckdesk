@@ -1,18 +1,42 @@
 <div class="space-y-6">
   <!-- Header -->
-  <div class="flex justify-between items-center">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-800">Asset Management</h2>
-      <p class="text-gray-600">Manage all IT assets for {{ selectedCompany?.name }}</p>
-    </div>
-    <button (click)="openForm()"
-      class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
-      <lucide-icon [name]="LucideIcon.Plus" class="mr-2 w-4 h-4" />
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+  <!-- Title Section -->
+  <div class="text-center sm:text-left">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Asset Management</h2>
+    <p class="text-gray-600 text-sm sm:text-base">
+      Manage all IT assets for {{ selectedCompany?.name }}
+    </p>
+  </div>
+
+  <!-- Buttons Section -->
+  <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+    <button
+      (click)="openExcelPopup()"
+      class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base"
+    >
+      <lucide-icon
+        [name]="LucideIcon.FileSpreadsheet"
+        class="mr-2 w-4 h-4"
+      ></lucide-icon>
+      <span class="hidden sm:inline">Generate Excel</span>
+      <span class="inline sm:hidden">Excel</span>
+    </button>
+
+    <button
+      (click)="openForm()"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base"
+    >
+      <lucide-icon
+        [name]="LucideIcon.Plus"
+        class="mr-2 w-4 h-4"
+      ></lucide-icon>
       <span class="hidden sm:inline">Add New Asset</span>
       <span class="inline sm:hidden">Add</span>
     </button>
-
   </div>
+</div>
+
 
   <!-- Filter + Search -->
   <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -32,7 +56,8 @@
           <select [formControl]="filterStatusControl"
             class="block border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none">
             <option value="All">All Status</option>
-            <option *ngFor="let status of filteredStatus" [value]="status.status">{{ status.status }}</option>
+            @for (status of filteredStatus; track $index) {
+            <option [value]="status.status">{{ status.status }}</option>}
           </select>
         </div>
       </div>
@@ -54,7 +79,8 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let asset of paginatedAssets()" class="hover:bg-gray-50">
+          @for (asset of paginatedAssets(); track $index) {
+          <tr class="hover:bg-gray-50">
             <td class="px-6 py-4">
               <div class="text-sm font-medium text-gray-900">{{ asset.name }}</div>
               <div class="text-sm text-gray-500">{{ asset.model }}</div>
@@ -88,9 +114,12 @@
               </button>
             </td>
           </tr>
-          <tr *ngIf="paginatedAssets().length === 0">
+          }
+          @if (paginatedAssets().length === 0) {
+          <tr>
             <td colspan="7" class="text-center py-4 text-sm text-gray-500">No assets found matching your criteria</td>
           </tr>
+          }
         </tbody>
       </table>
       <div *ngIf="paginatedAssets().length === filteredAssets().length" class="text-center py-4 text-green-600">✅ All
@@ -103,158 +132,289 @@
     <button (click)="nextPage()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm rounded-md">Load More</button>
   </div>
 
-  <!-- Asset Form Modal (continued below in next update...) -->
-  <!-- Modal Form with blur background -->
-  <!-- <div class="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-30 flex items-center justify-center z-50" *ngIf="showForm()"> -->
-  <!-- <div
-  class="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-30 backdrop-blur-sm px-4 m-3 sm:px-6 py-6"
-  *ngIf="showForm()"> -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4  sm:px-6 py-6" *ngIf="showForm()">
 
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl max-h-screen overflow-y-auto">
+  <!-- Fullscreen Modal Overlay -->
+  <div *ngIf="showForm()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 sm:p-6 overflow-y-auto">
+    <!-- Modal Content -->
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6 relative">
       <h3 class="text-lg font-medium text-gray-900 mb-4">
         {{ editingAssetId ? 'Edit Asset' : 'Add New Asset' }}
       </h3>
 
-      <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" class="space-y-6">
 
-        <!-- Asset Name -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Asset Name *</label>
-          <input formControlName="name" type="text"
-            [class.border-red-500]="assetForm.get('name')?.touched && assetForm.get('name')?.invalid"
-            class="w-full border p-2 rounded-md" />
+        <!-- Tabs -->
+        <div class="flex gap-4 mb-6">
+          <button type="button" (click)="activeTab = 'basic'" [class.bg-indigo-600]="activeTab === 'basic'"
+            [class.text-white]="activeTab === 'basic'" [class.border-indigo-600]="activeTab === 'basic'"
+            [class.font-semibold]="activeTab === 'basic'"
+            class="px-4 py-2 border rounded hover:bg-indigo-500 hover:text-white transition-colors duration-200">
+            Basic Details & Peripherals
+          </button>
+
+          <button type="button" (click)="activeTab = 'history'" [class.bg-indigo-600]="activeTab === 'history'"
+            [class.text-white]="activeTab === 'history'" [class.border-indigo-600]="activeTab === 'history'"
+            [class.font-semibold]="activeTab === 'history'"
+            class="px-4 py-2 border rounded hover:bg-indigo-500 hover:text-white transition-colors duration-200">
+            History & Software
+          </button>
         </div>
 
-        <!-- Model -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Model</label>
-          <input formControlName="model" type="text" class="w-full border p-2 rounded-md" />
-        </div>
 
-        <!-- Tag Number -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Tag Number *</label>
-          <input formControlName="tag" type="text" [readonly]="editingAssetId"
-            [class.border-red-500]="assetForm.get('tag')?.touched && assetForm.get('tag')?.invalid"
-            class="w-full border p-2 rounded-md bg-gray-100" />
-        </div>
+        <!-- Basic Details Tab -->
+        <div *ngIf="activeTab === 'basic'" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Your basic details fields here -->
+          <!-- Example: -->
 
-        <!-- Assigned Team -->
-        <!-- <div>
-        <label class="text-sm font-medium text-gray-700">Assigned Team *</label>
-        <select formControlName="team"
-          [class.border-red-500]="assetForm.get('team')?.touched && assetForm.get('team')?.invalid"
-          class="w-full border p-2 rounded-md">
-          <option value="">Select Team</option>
-          <option *ngFor="let team of filteredTeams" [value]="team.team">{{ team.team }}</option>
-        </select>
-      </div> -->
-
-
-        <!-- Status -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Status *</label>
-          <select formControlName="status"
-            [class.border-red-500]="assetForm.get('status')?.touched && assetForm.get('status')?.invalid"
-            class="w-full border p-2 rounded-md">
-            <option value="">Select Status</option>
-            <option *ngFor="let status of filteredStatus" [value]="status.status">{{ status.status }}</option>
-          </select>
-        </div>
-
-        <ng-container *ngIf="assetForm.get('status')?.value !== 'In Stock'">
-
-          <!-- Assigned To (Dropdown with Search) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-            <div class="relative employee-dropdown-container">
-              <input type="text" placeholder="Select user" [value]="selectedEmployeeName || ''"
-                (focus)="toggleEmployeeDropdown()" readonly
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer" />
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <lucide-icon [name]="LucideIcon.User" size="16" class="text-gray-400" />
-              </div>
+            <label class="text-sm font-medium text-gray-700">Asset Name *</label>
+            <input formControlName="name" type="text"
+              [class.border-red-500]="assetForm.get('name')?.touched && assetForm.get('name')?.invalid"
+              class="w-full border p-2 rounded-md" />
+          </div>
 
-              <!-- Dropdown -->
-              <div *ngIf="employeeDropdownOpen"
-                class="absolute mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto z-10">
-                <div class="p-2 sticky top-0 bg-white z-20 border-b">
-                  <input type="text" [formControl]="employeeSearch" placeholder="Search employees..."
-                    class="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          <!-- Model -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Model</label>
+            <input formControlName="model" type="text" class="w-full border p-2 rounded-md" />
+          </div>
+
+          <!-- Tag Number -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Tag Number *</label>
+            <input formControlName="tag" type="text" [readonly]="editingAssetId"
+              [class.border-red-500]="assetForm.get('tag')?.touched && assetForm.get('tag')?.invalid"
+              class="w-full border p-2 rounded-md bg-gray-100" />
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Status *</label>
+            <select formControlName="status"
+              [class.border-red-500]="assetForm.get('status')?.touched && assetForm.get('status')?.invalid"
+              class="w-full border p-2 rounded-md">
+              <option value="">Select Status</option>
+              @for (status of filteredStatus; track $index) {
+              <option [value]="status.status">{{ status.status }}</option>
+              }
+            </select>
+
+          </div>
+
+          <ng-container *ngIf="assetForm.get('status')?.value !== 'In Stock'">
+
+            <!-- Assigned To (Dropdown with Search) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <div class="relative employee-dropdown-container">
+                <input type="text" placeholder="Select user" [value]="selectedEmployeeName || ''"
+                  (focus)="toggleEmployeeDropdown()" readonly
+                  class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer" />
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <lucide-icon [name]="LucideIcon.User" size="16" class="text-gray-400" />
                 </div>
 
-                <div *ngFor="let u of filteredEmployeeResults()" (click)="selectEmployee(u)"
-                  class="cursor-pointer px-4 py-2 hover:bg-indigo-100">
-                  {{ u.name }}
-                </div>
-                <div *ngIf="searching()">Searching...</div>
-
-                <div *ngIf="!searching() && filteredEmployeeResults().length === 1 && employeeSearch.value?.trim()"
-                  class="px-4 py-2 text-gray-500 text-sm">
-                  No records found
+                <!-- Dropdown -->
+                <div *ngIf="employeeDropdownOpen"
+                  class="absolute mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto z-10">
+                  <div class="p-2 sticky top-0 bg-white z-20 border-b">
+                    <input type="text" [formControl]="employeeSearch" placeholder="Search employees..."
+                      class="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  </div>
+                  @for (u of filteredEmployeeResults(); track $index) {
+                  <div (click)="selectEmployee(u)" class="cursor-pointer px-4 py-2 hover:bg-indigo-100">
+                    {{ u.name }}
+                  </div>
+                  }
+                  @if (searching()) {
+                  <div>Searching...</div>
+                  }
+                  @if (!searching() && filteredEmployeeResults().length === 1 && employeeSearch.value?.trim()) {
+                  <div class="px-4 py-2 text-gray-500 text-sm">
+                    No records found
+                  </div>
+                  }
                 </div>
               </div>
             </div>
+          </ng-container>
+
+          <!-- OS -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Operating System</label>
+            <input formControlName="os" type="text" class="w-full border p-2 rounded-md" />
           </div>
-        </ng-container>
 
-        <!-- OS -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Operating System</label>
-          <input formControlName="os" type="text" class="w-full border p-2 rounded-md" />
+          <!-- RAM -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">RAM</label>
+            <input formControlName="ram" type="text" class="w-full border p-2 rounded-md" />
+          </div>
+
+          <!-- Drive -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Drive</label>
+            <input formControlName="drive" type="text" class="w-full border p-2 rounded-md" />
+          </div>
+
+          <!-- Serial Number -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Serial Number</label>
+            <input formControlName="serialNumber" type="text" class="w-full border p-2 rounded-md" />
+          </div>
+
+          <!-- Purchase Date -->
+          <div>
+            <label class="text-sm font-medium text-gray-700">Purchase Date *</label>
+            <input formControlName="purchaseDate" type="date"
+              [class.border-red-500]="assetForm.get('purchaseDate')?.touched && assetForm.get('purchaseDate')?.invalid"
+              class="w-full border p-2 rounded-md" max="{{ today | date:'yyyy-MM-dd' }}" />
+          </div>
+
+          <!-- Peripherals -->
+          <div class="md:col-span-2">
+            <label class="text-sm font-medium text-gray-700">Other Peripherals</label>
+            <textarea formControlName="peripherals" rows="2" class="w-full border p-2 rounded-md"></textarea>
+          </div>
         </div>
 
-        <!-- RAM -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">RAM</label>
-          <input formControlName="ram" type="text" class="w-full border p-2 rounded-md" />
+        <!-- History & Software Tab -->
+        <div *ngIf="activeTab === 'history'">
+          <!-- History & Software Tab -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- History Column -->
+            <div>
+              <h3 class="font-semibold mb-2">Add History</h3>
+              <form [formGroup]="historyForm" (ngSubmit)="addHistory()" class="mb-4">
+                <textarea formControlName="note" placeholder="Enter history note *"
+                  class="border p-2 w-full mb-2 rounded-md"></textarea>
+                <input type="date" formControlName="date" class="w-full border p-2 mb-2 rounded-md" />
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                  + Add History
+                </button>
+              </form>
+
+              <ul class="max-h-48 overflow-y-auto">
+                <li *ngFor="let h of historyArray; let i = index"
+                  class="flex justify-between items-center border p-2 rounded mb-2">
+                  <div>
+                    <p>{{ h.note }}</p>
+                    <small class="text-gray-600">{{ h.date | date: 'mediumDate' }}</small>
+                  </div>
+                  <button type="button" (click)="removeHistory(i)" class="text-red-600 font-bold">✖</button>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Software Column -->
+            <div>
+              <h3 class="font-semibold mb-2">Add Software</h3>
+              <form [formGroup]="softwareForm" (ngSubmit)="addSoftware()" class="mb-4 space-y-4">
+                <!-- Row 1: Name & Version -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Software Name *</label>
+                    <input formControlName="name" placeholder="Software Name" class="w-full border p-2 rounded-md" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Version</label>
+                    <input formControlName="version" placeholder="Version" class="w-full border p-2 rounded-md" />
+                  </div>
+                </div>
+
+                <!-- Row 2: Purchase Date & Expiry Date -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date *</label>
+                    <input type="date" formControlName="purchaseDate" class="w-full border p-2 rounded-md" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                    <input type="date" formControlName="expireDate" class="w-full border p-2 rounded-md" />
+                  </div>
+                </div>
+
+                <!-- Row 3: License Key & Notes -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">License Key</label>
+                    <input formControlName="licenseKey" placeholder="License Key"
+                      class="w-full border p-2 rounded-md" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea formControlName="notes" placeholder="Notes" rows="2"
+                      class="w-full border p-2 rounded-md resize-none"></textarea>
+                  </div>
+                </div>
+
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                  + Add Software
+                </button>
+              </form>
+
+
+              <ul class="max-h-48 overflow-y-auto">
+                <li *ngFor="let s of softwareArray; let i = index"
+                  class="flex justify-between items-center border p-2 rounded mb-2">
+                  <div>
+                    <p>{{ s.name }}</p>
+                    <small class="text-gray-600">Purchased: {{ s.purchaseDate | date: 'mediumDate' }}</small><br />
+                    <small class="text-gray-600">License Key: {{ s.licenseKey }}</small><br />
+
+                  </div>
+                  <button type="button" (click)="removeSoftware(i)" class="text-red-600 font-bold">✖</button>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <!-- Drive -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Drive</label>
-          <input formControlName="drive" type="text" class="w-full border p-2 rounded-md" />
-        </div>
-
-        <!-- Serial Number -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Serial Number</label>
-          <input formControlName="serialNumber" type="text" class="w-full border p-2 rounded-md" />
-        </div>
-
-        <!-- Purchase Date -->
-        <div>
-          <label class="text-sm font-medium text-gray-700">Purchase Date *</label>
-          <input formControlName="purchaseDate" type="date"
-            [class.border-red-500]="assetForm.get('purchaseDate')?.touched && assetForm.get('purchaseDate')?.invalid"
-            class="w-full border p-2 rounded-md" max="{{ today | date:'yyyy-MM-dd' }}" />
-        </div>
-
-        <!-- History -->
-        <div class="md:col-span-2">
-          <label class="text-sm font-medium text-gray-700">Asset History</label>
-          <textarea formControlName="history" rows="3" class="w-full border p-2 rounded-md"
-            placeholder="E.g., Last serviced: 2024-10-01, RAM changed: 2025-02-10"></textarea>
-        </div>
-
-        <!-- Peripherals -->
-        <div class="md:col-span-2">
-          <label class="text-sm font-medium text-gray-700">Other Peripherals</label>
-          <textarea formControlName="peripherals" rows="2" class="w-full border p-2 rounded-md"></textarea>
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-3 mt-4">
+          <button type="button" (click)="closeForm()" class="px-4 py-2 border rounded-md text-sm">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md" [disabled]="loadingForm()">
+            <span *ngIf="loadingForm()">Saving...</span>
+            <span *ngIf="!loadingForm()">{{ editingAssetId ? 'Update Asset' : 'Save Asset' }}</span>
+          </button>
         </div>
       </form>
+    </div>
+  </div>
 
-      <!-- Buttons -->
-      <div class="flex justify-end space-x-3 mt-4">
-        <button type="button" (click)="closeForm()" class="px-4 py-2 border rounded-md text-sm">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md" [disabled]="loadingForm()"
-          (click)="onSubmit()">
-          <span *ngIf="loadingForm()">Saving...</span>
-          <span *ngIf="!loadingForm()">{{ editingAssetId ? 'Update Asset' : 'Save Asset' }}</span>
+  <app-asset-detail *ngIf="showAssetDetail()" [asset]="showAssetDetail()" [onClose]="closeDetails.bind(this)">
+  </app-asset-detail>
+
+  <!-- Excel Fields Modal -->
+  <div class="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4" *ngIf="showExcelPopup">
+    <div class="bg-white rounded-lg shadow-lg max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
+      <h3 class="text-xl font-semibold mb-4">Select and Arrange Fields</h3>
+
+      <p class="mb-2 text-gray-600">
+        Check the fields you want to include and drag to reorder
+      </p>
+
+
+      <div class="border rounded p-2 max-h-96 overflow-y-auto" cdkDropList  (cdkDropListDropped)="drop($event)">
+        <div *ngFor="let field of excelFields; let i = index" cdkDrag
+          class="flex items-center mb-2 p-2 bg-gray-100 rounded cursor-move">
+          <input type="checkbox" [checked]="field.selected" (change)="toggleFieldSelection(i)" class="mr-3" />
+          <lucide-icon [name]="LucideIcon.GripVertical" class="w-4 h-4 text-gray-500 mr-2" cdkDragHandle></lucide-icon>
+          <span>{{ field.key }}</span>
+        </div>
+      </div>
+
+
+      <div class="mt-6 flex justify-end space-x-3">
+        <button (click)="closeExcelPopup()" class="px-4 py-2 border rounded text-sm hover:bg-gray-100">
+          Cancel
+        </button>
+        <button (click)="generateExcel()" class="px-4 py-2 bg-green-600 text-white rounded text-sm">
+          Generate Excel
         </button>
       </div>
     </div>
   </div>
-  <app-asset-detail *ngIf="showAssetDetail()" [asset]="showAssetDetail()" [onClose]="closeDetails.bind(this)">
-  </app-asset-detail>

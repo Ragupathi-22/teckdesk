@@ -100,5 +100,32 @@ mailToEmployeeForAccountCreation(email: string, username: string, password: stri
   return this.sendMail([email], subject, body);
 }
 
+
+// 📧 Mail to admin when account is created
+mailToAdminForAccountCreation(email: string, username: string, password: string, siteUrl: string) {
+  const subject = 'Your TeckDesk Admin Account Has Been Created';
+
+  const body = `
+    <div style="font-family: Arial, sans-serif; color: #333;">
+      <h2 style="color: #4f46e5;">Welcome to TeckDesk (Admin Access)</h2>
+      <p>Your admin account has been created successfully. Please find your credentials below:</p>
+
+      <p><strong>Admin Panel URL:</strong> <a href="${siteUrl}">${siteUrl}</a></p>
+      <p><strong>Username:</strong> ${username}</p>
+      <p><strong>Password:</strong> ${password}</p>
+
+      <p style="margin-top: 16px; color: #d97706;">
+         Please Don't share the Credentials for security.
+      </p>
+
+      <hr>
+      <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} TeckDesk. All rights reserved.</p>
+    </div>
+  `;
+
+  return this.sendMail([email], subject, body);
+}
+
+
 }
       // <p style="margin-top: 20px;">Please log in and change your password immediately after your first login.</p>

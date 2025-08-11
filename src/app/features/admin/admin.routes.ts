@@ -13,8 +13,9 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'dashboard', component: AdminDashboard },
       { path: 'users', loadComponent: () => import('./users/users').then(m => m.Users) },
       { path: 'assets', loadComponent: () => import('./admin-assets/admin-assets').then(m => m.AdminAssets) },
-      { path: 'tickets', loadComponent: () => import('./admin-tickets/admin-tickets').then(m => m.AdminTickets) }
-
+      { path: 'tickets', loadComponent: () => import('./admin-tickets/admin-tickets').then(m => m.AdminTickets) },
+      { path: 'settings', loadComponent: () => import('./settings/settings').then(m => m.Settings) }
+      
       //   // add more admin pages here
       //   // { path: 'assets', loadComponent: () => import('./assets/assets.component').then(m => m.AssetsComponent) },
     ]

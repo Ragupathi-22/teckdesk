@@ -1,44 +1,87 @@
-<!-- Overlay -->
-<!-- <div class="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"> -->
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4  sm:px-6 py-6">
-
-  <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
-
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 sm:px-6 py-6">
+  <div
+    class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto space-y-6"
+  >
     <!-- Header -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-gray-800">Asset Details</h2>
-      <button (click)="onClose()" class="text-gray-600 hover:text-red-500">
-        <lucide-icon [name]="LucideIcon.X" class="w-5 h-5" />
+    <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+      <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+        <lucide-icon [name]="LucideIcon.Layers" class="w-6 h-6 text-indigo-600" />
+        Asset Details
+      </h2>
+      <button (click)="onClose()" class="text-gray-600 hover:text-red-500" aria-label="Close modal">
+        <lucide-icon [name]="LucideIcon.X" class="w-6 h-6" />
       </button>
     </div>
 
-    <!-- Details -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div><strong>Name:</strong> {{ asset?.name }}</div>
-      <div><strong>Model:</strong> {{ asset?.model }}</div>
-      <div><strong>Tag Number:</strong> {{ asset?.tag }}</div>
-      <div><strong>Status:</strong> {{ asset?.status }}</div>
-      <div><strong>Assigned To:</strong> {{ asset?.assignedToName || '-' }}</div>
-      <div><strong>Operating System:</strong> {{ asset?.os }}</div>
-      <div><strong>RAM:</strong> {{ asset?.ram }}</div>
-      <div><strong>Drive:</strong> {{ asset?.drive }}</div>
-      <div><strong>Serial Number:</strong> {{ asset?.serialNumber }}</div>
-      <div><strong>Purchase Date:</strong> {{ asset?.purchaseDate ? (asset?.purchaseDate | date:'mediumDate') : '-' }}</div>
-    </div>
+    <!-- Basic System Details -->
+    <section class="border rounded-md p-4 shadow-sm">
+      <h3 class="text-lg font-semibold text-indigo-700 flex items-center gap-2 mb-3">
+        <lucide-icon [name]="LucideIcon.Cpu" class="w-5 h-5" />
+        Basic System Details
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-gray-700">
+        <div><strong>Name:</strong> {{ asset?.name || '-' }}</div>
+        <div><strong>Model:</strong> {{ asset?.model || '-' }}</div>
+        <div><strong>Tag Number:</strong> {{ asset?.tag || '-' }}</div>
+        <div><strong>Status:</strong> {{ asset?.status || '-' }}</div>
+        <div><strong>Assigned To:</strong> {{ asset?.assignedToName || '-' }}</div>
+        <div><strong>Operating System:</strong> {{ asset?.os || '-' }}</div>
+        <div><strong>RAM:</strong> {{ asset?.ram || '-' }}</div>
+        <div><strong>Drive:</strong> {{ asset?.drive || '-' }}</div>
+        <div><strong>Serial Number:</strong> {{ asset?.serialNumber || '-' }}</div>
+        <div><strong>Purchase Date:</strong> {{ asset?.purchaseDate ? (asset.purchaseDate | date:'mediumDate') : '-' }}</div>
+        <div class="sm:col-span-2"><strong>Peripherals:</strong> <br />{{ asset?.peripherals || '-' }}</div>
+      </div>
+    </section>
 
-    <div class="mt-4">
-      <strong>History:</strong>
-      <p class="whitespace-pre-line text-gray-700">{{ asset?.history || '-' }}</p>
-    </div>
+    <!-- History -->
+    <section class="border rounded-md p-4 shadow-sm">
+      <h3 class="text-lg font-semibold text-indigo-700 flex items-center gap-2 mb-3">
+        <lucide-icon [name]="LucideIcon.Clock" class="w-5 h-5" />
+        History
+      </h3>
+      <div *ngIf="asset?.history && asset.history.length; else noHistory" class="max-h-40 overflow-y-auto space-y-2 text-gray-700">
+        <div *ngFor="let h of asset.history">
+          <p class="whitespace-pre-line">{{ h.note }}</p>
+          <small class="text-gray-500">{{ h.date | date:'mediumDate' }}</small>
+          <hr class="my-2" />
+        </div>
+      </div>
+      <ng-template #noHistory>
+        <p class="text-gray-400 italic">No history available.</p>
+      </ng-template>
+    </section>
 
-    <div class="mt-2">
-      <strong>Peripherals:</strong>
-      <p class="whitespace-pre-line text-gray-700">{{ asset?.peripherals || '-' }}</p>
-    </div>
+    <!-- Software Installed -->
+    <section class="border rounded-md p-4 shadow-sm">
+      <h3 class="text-lg font-semibold text-indigo-700 flex items-center gap-2 mb-3">
+        <lucide-icon [name]="LucideIcon.Box" class="w-5 h-5" />
+        Software Installed
+      </h3>
+      <div *ngIf="asset?.installedSoftware && asset.installedSoftware.length; else noSoftware" class="max-h-40 overflow-y-auto space-y-3 text-gray-700">
+        <div *ngFor="let s of asset.installedSoftware" class="border rounded p-3 bg-gray-50">
+          <div class="flex justify-between items-center mb-1">
+            <strong>{{ s.name || '-' }}</strong>
+            <span class="text-sm italic text-gray-500">version {{ s.version || 'N/A' }}</span>
+          </div>
+          <div class="text-sm">
+            <p><strong>Purchased:</strong> {{ s.purchaseDate ? (s.purchaseDate | date:'mediumDate') : '-' }}</p>
+            <p><strong>Expires:</strong> {{ s.expireDate ? (s.expireDate | date:'mediumDate') : '-' }}</p>
+            <p><strong>License Key:</strong> {{ s.licenseKey || '-' }}</p>
+            <p><strong>Notes:</strong> {{ s.notes || '-' }}</p>
+          </div>
+        </div>
+      </div>
+      <ng-template #noSoftware>
+        <p class="text-gray-400 italic">No software installed.</p>
+      </ng-template>
+    </section>
 
-    <!-- Close Button (optional) -->
-    <div class="mt-6 text-right">
-      <button (click)="onClose()" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md text-sm">Close</button>
+    <!-- Close Button -->
+    <div class="mt-4 text-right">
+      <button (click)="onClose()" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md text-sm">
+        Close
+      </button>
     </div>
   </div>
 </div>

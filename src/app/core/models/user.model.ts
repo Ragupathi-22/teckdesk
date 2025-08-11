@@ -6,7 +6,10 @@ export interface UserModel {
   role: 'employee';
   companyId: string;
   team?: string;
+  dateOfJoining :string;
 }
+
+
 
 
 
