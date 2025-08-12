@@ -1,9 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LookupService } from './shared/service/company.service';
 import { LoadingComponent } from './shared/components/loading/loading.component';
 import { ToastMessageComponent } from './shared/components/toast-message/toast-message';
 import { ConfirmModalComponent } from './shared/components/confirmation-modal/confirmation-modal';
+import { LookupService } from './core/services/company.service';
 
 @Component({
   selector: 'app-root',

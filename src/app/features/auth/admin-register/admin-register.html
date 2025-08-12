@@ -7,16 +7,18 @@
 
       <!-- Name -->
       <div>
-        <label class="block text-sm font-medium mb-1">Name</label>
+        <label class="block text-sm font-medium mb-1">Name *</label>
         <input type="text" formControlName="name"
+          [class.border-red-500]="adminForm.get('name')?.touched && adminForm.get('name')?.invalid"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 focus:border-blue-500"
           placeholder="Full Name">
       </div>
 
       <!-- Email -->
       <div>
-        <label class="block text-sm font-medium mb-1">Email</label>
+        <label class="block text-sm font-medium mb-1">Email *</label>
         <input type="email" formControlName="email"
+          [class.border-red-500]="adminForm.get('email')?.touched && adminForm.get('email')?.invalid"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 focus:border-blue-500"
           placeholder="Email Address">
       </div>
@@ -31,6 +33,7 @@
         <label class="block text-sm font-medium mb-1">Password</label>
         <div class="relative">
           <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+            [class.border-red-500]="adminForm.get('password')?.touched && adminForm.get('password')?.invalid"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring focus:ring-blue-300 focus:border-blue-500"
             placeholder="Password">
           <button type="button" class="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"

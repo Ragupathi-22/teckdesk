@@ -3,35 +3,106 @@
 
   <!-- Tabs -->
   <div class="flex border-b border-gray-300 mb-4">
-    <!-- Company Settings Tab -->
-    <button 
-      (click)="activeTab.set('company')" 
-      [class.border-blue-500]="activeTab() === 'company'" 
-      class="px-4 py-2 -mb-px border-b-2 hover:text-blue-500"
-    >
+    <button type="button" (click)="activeTab.set('company')" [ngClass]="{
+        'border-blue-500 text-blue-500': activeTab() === 'company',
+        'border-transparent': activeTab() !== 'company'
+      }" class="px-4 py-2 -mb-px border-b-2 hover:text-blue-500">
       Company Settings
     </button>
 
-    <!-- Admin Settings Tab -->
-    <!-- <button 
-      (click)="activeTab.set('adminSetting')" 
-      [class.border-blue-500]="activeTab() === 'adminSetting'" 
-      class="px-4 py-2 -mb-px border-b-2 hover:text-blue-500"
-    >
+    <button type="button" (click)="activeTab.set('adminSetting')" [ngClass]="{
+        'border-blue-500 text-blue-500': activeTab() === 'adminSetting',
+        'border-transparent': activeTab() !== 'adminSetting'
+      }" class="px-4 py-2 -mb-px border-b-2 hover:text-blue-500">
       Admin Settings
-    </button> -->
+    </button>
   </div>
 
-  <!-- Active Tab Content -->
-  <div>
-    <app-company-settings *ngIf="activeTab() === 'company'"></app-company-settings>
+  <!-- Company Settings -->
+  <div *ngIf="activeTab() === 'company'">
+    <app-company-settings></app-company-settings>
   </div>
 
+  <!-- Admin Settings -->
+  <div *ngIf="activeTab() === 'adminSetting'">
+    <h2 class="text-xl font-semibold mb-4">Admin List</h2>
 
-  <!-- @if (activeTab()==='adminSetting') {
-    <div >
-     <p>admin</p>
-     
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 border-b text-left">Name</th>
+            <th class="px-4 py-2 border-b text-left">Email</th>
+            <th class="px-4 py-2 border-b text-center">Status</th>
+            <th class="px-4 py-2 border-b text-center">Mail from Employee</th>
+            <th class="px-4 py-2 border-b text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let admin of pagedAdmins(); trackBy: trackByUid" class="hover:bg-gray-50">
+            <!-- Editable Row -->
+            <ng-container *ngIf="editingAdmin()?.uid === admin.uid; else viewMode">
+              <td class="px-4 py-2 border-b">
+                <input [(ngModel)]="editingAdmin()!.name" class="border rounded p-2 w-full" placeholder="Name" />
+              </td>
+              <td class="px-4 py-2 border-b">
+                {{ editingAdmin()!.email }}
+              </td>
+              <td class="px-4 py-2 border-b text-center">
+                <input type="checkbox" [(ngModel)]="editingAdmin()!.isActive" />
+              </td>
+              <td class="px-4 py-2 border-b text-center">
+                <input type="checkbox" [(ngModel)]="editingAdmin()!.mailFromEmployee" />
+              </td>
+              <td class="px-4 py-2 border-b text-center">
+                <div class="flex justify-center gap-2">
+                  <button type="button" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                    (click)="saveAdminChanges()">
+                    Save
+                  </button>
+                  <button type="button" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400" (click)="cancelEdit()">
+                    Cancel
+                  </button>
+                </div>
+              </td>
+
+            </ng-container>
+
+            <!-- View Row -->
+            <ng-template #viewMode>
+              <td class="px-4 py-2 border-b">{{ admin.name }}</td>
+              <td class="px-4 py-2 border-b">{{ admin.email }}</td>
+              <td class="px-4 py-2 border-b text-center">
+                <span class="px-2 py-1 text-xs rounded-full" [class.bg-green-100]="admin.isActive"
+                  [class.text-green-700]="admin.isActive" [class.bg-red-100]="!admin.isActive"
+                  [class.text-red-700]="!admin.isActive">
+                  {{ admin.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="px-4 py-2 border-b text-center">
+                {{ admin.mailFromEmployee ? 'Yes' : 'No' }}
+              </td>
+              <td class="px-4 py-2 border-b text-center space-x-3">
+                <button (click)="startEdit(admin)" class="text-indigo-600 hover:text-indigo-900 mr-3"
+                  title="Edit Admin">
+                  <lucide-icon [name]="LucideIcon.Edit" class="w-4 h-4"></lucide-icon>
+                </button>
+                <button (click)="deleteAdmin(admin.uid, admin.name, admin.email)"
+                  class="text-red-600 hover:text-red-900" title="Delete Admin">
+                  <lucide-icon [name]="LucideIcon.Trash" class="w-4 h-4"></lucide-icon>
+                </button>
+              </td>
+            </ng-template>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  } -->
+
+    <!-- Load More -->
+    <div class="mt-6 text-center" *ngIf="pagedAdmins().length < admins().length">
+      <button type="button" class="px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" (click)="loadMore()">
+        Load More
+      </button>
+    </div>
+  </div>
 </div>

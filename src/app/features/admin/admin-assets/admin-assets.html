@@ -1,41 +1,31 @@
 <div class="space-y-6">
   <!-- Header -->
-<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-  <!-- Title Section -->
-  <div class="text-center sm:text-left">
-    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Asset Management</h2>
-    <p class="text-gray-600 text-sm sm:text-base">
-      Manage all IT assets for {{ selectedCompany?.name }}
-    </p>
-  </div>
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+    <!-- Title Section -->
+    <div class="text-center sm:text-left">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Asset Management</h2>
+      <p class="text-gray-600 text-sm sm:text-base">
+        Manage all IT assets for {{ selectedCompany?.name }}
+      </p>
+    </div>
 
-  <!-- Buttons Section -->
-  <div class="flex flex-wrap justify-center sm:justify-end gap-2">
-    <button
-      (click)="openExcelPopup()"
-      class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base"
-    >
-      <lucide-icon
-        [name]="LucideIcon.FileSpreadsheet"
-        class="mr-2 w-4 h-4"
-      ></lucide-icon>
-      <span class="hidden sm:inline">Generate Excel</span>
-      <span class="inline sm:hidden">Excel</span>
-    </button>
+    <!-- Buttons Section -->
+    <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+      <button (click)="openExcelPopup()"
+        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
+        <lucide-icon [name]="LucideIcon.FileSpreadsheet" class="mr-2 w-4 h-4"></lucide-icon>
+        <span class="hidden sm:inline">Generate Excel</span>
+        <span class="inline sm:hidden">Excel</span>
+      </button>
 
-    <button
-      (click)="openForm()"
-      class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base"
-    >
-      <lucide-icon
-        [name]="LucideIcon.Plus"
-        class="mr-2 w-4 h-4"
-      ></lucide-icon>
-      <span class="hidden sm:inline">Add New Asset</span>
-      <span class="inline sm:hidden">Add</span>
-    </button>
+      <button (click)="openForm()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
+        <lucide-icon [name]="LucideIcon.Plus" class="mr-2 w-4 h-4"></lucide-icon>
+        <span class="hidden sm:inline">Add New Asset</span>
+        <span class="inline sm:hidden">Add</span>
+      </button>
+    </div>
   </div>
-</div>
 
 
   <!-- Filter + Search -->
@@ -75,6 +65,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned To</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Print</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
         </thead>
@@ -102,14 +93,21 @@
             <td class="px-6 py-4 text-sm text-gray-500">
               {{ asset.purchaseDate ? (asset.purchaseDate | date: 'mediumDate') : '-' }}
             </td>
+            <td class="px-8 py-4 text-sm text-gray-500">
+              <button (click)="openPrintModal(asset)" title="Print Sticker" class="text-gray-600 hover:text-gray-900">
+                <lucide-icon [name]="LucideIcon.Printer" class="w-4 h-4" />
+              </button>
+
+            </td>
             <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
-              <button (click)="showDetails(asset)" class="text-blue-600 hover:text-blue-900">
+              <button (click)="showDetails(asset)" class="text-blue-600 hover:text-blue-900" title="View Asset Details">
                 <lucide-icon [name]="LucideIcon.Info" class="w-4 h-4" />
               </button>
-              <button (click)="openForm(asset)" class="text-indigo-600 hover:text-indigo-900">
+              <button (click)="openForm(asset)" class="text-indigo-600 hover:text-indigo-900" title="Edit Asset">
                 <lucide-icon [name]="LucideIcon.Edit" class="w-4 h-4" />
               </button>
-              <button (click)="deleteAsset(asset.id ,asset.tag)" class="text-red-600 hover:text-red-900">
+              <button (click)="deleteAsset(asset.id ,asset.tag)" class="text-red-600 hover:text-red-900"
+                title="Delete Asset">
                 <lucide-icon [name]="LucideIcon.Trash" class="w-4 h-4" />
               </button>
             </td>
@@ -243,19 +241,44 @@
           <!-- OS -->
           <div>
             <label class="text-sm font-medium text-gray-700">Operating System</label>
-            <input formControlName="os" type="text" class="w-full border p-2 rounded-md" />
+            <select formControlName="os" (change)="onOSChange($event)" class="w-full border p-2 rounded-md">
+              <option value="">-- Select OS --</option>
+              <option *ngFor="let os of operatingSystems" [value]="os.operatingSystem">
+                {{ os.operatingSystem }}
+              </option>
+            </select>
           </div>
 
-          <!-- RAM -->
+          <!-- os version  -->
+          <div *ngIf="versions().length > 0">
+            <label class="text-sm font-medium text-gray-700">Version</label>
+            <select formControlName="osVersion" class="w-full border p-2 rounded-md">
+              <option value="">-- Select Version --</option>
+              <option *ngFor="let v of versions()" [value]="v">
+                {{ v }}
+              </option>
+            </select>
+          </div>
+
           <div>
             <label class="text-sm font-medium text-gray-700">RAM</label>
-            <input formControlName="ram" type="text" class="w-full border p-2 rounded-md" />
+            <select formControlName="ram" class="w-full border p-2 rounded-md">
+              <option value="">Select RAM</option>
+              @for (ram of ramOptions; track $index) {
+              <option [value]="ram">{{ ram }}</option>
+              }
+            </select>
           </div>
 
           <!-- Drive -->
           <div>
             <label class="text-sm font-medium text-gray-700">Drive</label>
-            <input formControlName="drive" type="text" class="w-full border p-2 rounded-md" />
+            <select formControlName="drive" class="w-full border p-2 rounded-md">
+              <option value="">Select Drive</option>
+              @for (drive of driveOptions; track $index) {
+              <option [value]="drive">{{ drive }}</option>
+              }
+            </select>
           </div>
 
           <!-- Serial Number -->
@@ -287,8 +310,9 @@
             <div>
               <h3 class="font-semibold mb-2">Add History</h3>
               <form [formGroup]="historyForm" (ngSubmit)="addHistory()" class="mb-4">
-                <textarea formControlName="note" placeholder="Enter history note *"
-                  class="border p-2 w-full mb-2 rounded-md"></textarea>
+                <textarea formControlName="note"
+                  [class.border-red-500]="historyForm.get('note')?.touched && historyForm.get('note')?.invalid"
+                  placeholder="Enter history note *" class="border p-2 w-full mb-2 rounded-md"></textarea>
                 <input type="date" formControlName="date" class="w-full border p-2 mb-2 rounded-md" />
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
                   + Add History
@@ -315,7 +339,9 @@
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Software Name *</label>
-                    <input formControlName="name" placeholder="Software Name" class="w-full border p-2 rounded-md" />
+                    <input formControlName="name" placeholder="Software Name"
+                      [class.border-red-500]="softwareForm.get('name')?.touched && softwareForm.get('name')?.invalid"
+                      class="w-full border p-2 rounded-md" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Version</label>
@@ -327,7 +353,9 @@
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date *</label>
-                    <input type="date" formControlName="purchaseDate" class="w-full border p-2 rounded-md" />
+                    <input type="date" formControlName="purchaseDate"
+                      [class.border-red-500]="softwareForm.get('purchaseDate')?.touched && softwareForm.get('purchaseDate')?.invalid"
+                      class="w-full border p-2 rounded-md" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
@@ -398,7 +426,7 @@
       </p>
 
 
-      <div class="border rounded p-2 max-h-96 overflow-y-auto" cdkDropList  (cdkDropListDropped)="drop($event)">
+      <div class="border rounded p-2 max-h-96 overflow-y-auto" cdkDropList (cdkDropListDropped)="drop($event)">
         <div *ngFor="let field of excelFields; let i = index" cdkDrag
           class="flex items-center mb-2 p-2 bg-gray-100 rounded cursor-move">
           <input type="checkbox" [checked]="field.selected" (change)="toggleFieldSelection(i)" class="mr-3" />
@@ -418,3 +446,25 @@
       </div>
     </div>
   </div>
+
+
+  <!-- Print Sticker Modal -->
+<div *ngIf="printModalOpen()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 sm:p-6 overflow-y-auto">
+  <div class="bg-white p-6 rounded-lg max-w-sm w-full shadow-lg relative">
+    <h3 class="text-xl mb-4 font-bold">Print Asset Sticker Preview</h3>
+
+    <div class="border p-4 mb-4">
+      <h4 class="text-lg font-semibold">{{ printAsset()?.name }} - {{ printAsset()?.model || '-' }}</h4>
+      <p><strong>Company:</strong>{{selectedCompany?.name}} </p>
+      <p><strong>Tag:</strong> {{ printAsset()?.tag }}</p>
+      <p><strong>Serial Number:</strong> {{ printAsset()?.serialNumber }}</p>
+      <p><strong>Assigned To:</strong> {{ printAsset()?.assignedToName || '-' }}</p>
+    </div>
+
+    <div class="flex justify-end space-x-4">
+      <button (click)="printSticker()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Print</button>
+      <button (click)="closePrintModal()" class="px-4 py-2 border rounded-md hover:bg-gray-100">Cancel</button>
+    </div>
+  </div>
+</div>

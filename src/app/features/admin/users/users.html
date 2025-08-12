@@ -103,10 +103,10 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.dateOfJoining }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button (click)="editUser(user)" class="text-indigo-600 hover:text-indigo-900 mr-3">
+              <button (click)="editUser(user)" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit User">
                 <lucide-icon [name]="LucideIcon.Edit" class="w-4 h-4"></lucide-icon>
               </button>
-              <button (click)="deleteUser(user.id,user.name)" class="text-red-600 hover:text-red-900">
+              <button (click)="deleteUser(user.id,user.name)" class="text-red-600 hover:text-red-900" title="Delete User">
                 <lucide-icon [name]="LucideIcon.Trash" class="w-4 h-4"></lucide-icon>
               </button>
             </td>
@@ -144,25 +144,31 @@
 
         <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input formControlName="name" type="text" class="w-full border border-gray-300 rounded-md shadow-sm p-2" />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <input formControlName="name" type="text" 
+            [class.border-red-500]="userForm.get('name')?.touched && userForm.get('name')?.invalid"
+            class="w-full border border-gray-300 rounded-md shadow-sm p-2" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
             <input formControlName="email" type="email"
+            [class.border-red-500]="userForm.get('email')?.touched && userForm.get('email')?.invalid"
               class="w-full border border-gray-300 rounded-md shadow-sm p-2" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Joining</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Joining *</label>
             <input formControlName="dateOfJoining" type="date"
+            [class.border-red-500]="userForm.get('dateOfJoining')?.touched && userForm.get('dateOfJoining')?.invalid"
               class="w-full border border-gray-300 rounded-md shadow-sm p-2" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Team</label>
-            <select formControlName="team" class="w-full border border-gray-300 rounded-md shadow-sm p-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Team *</label>
+            <select formControlName="team" 
+            [class.border-red-500]="userForm.get('team')?.touched && userForm.get('team')?.invalid"
+            class="w-full border border-gray-300 rounded-md shadow-sm p-2">
               @for (team of filteredTeams; track $index) {
               <option [value]="team.team">{{ team.team }}</option>
               }

@@ -10,6 +10,16 @@ export interface UserModel {
 }
 
 
+export interface AdminModel {
+  uid: string;
+  name: string;
+  email: string;
+  role: 'admin';
+  mailFromEmployee: boolean;
+  isActive: boolean;
+}
+
+
 
 
 

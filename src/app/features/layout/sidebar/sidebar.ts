@@ -13,15 +13,14 @@ import { DataService } from '../../../core/services/data.service';
 })
 export class SidebarComponent {
   LucideIcons = LucideIconCollection;
-  private dataService = inject(DataService);
+  public dataService = inject(DataService);
 
   role = this.dataService.getRole();
-  company = this.dataService.getCompany()?.name;
 
   @Input() isOpen = true;              // Controls visibility
   @Input() isMobile = false;           // Used to decide if backdrop should show
   @Output() closeSidebar = new EventEmitter<void>();
-
+  
   navItems = [
     { to: '/admin/dashboard', icon: this.LucideIcons.LayoutDashboard, label: 'Dashboard' ,adminOnly :true},
     { to: '/admin/assets', icon: this.LucideIcons.Monitor, label: 'Assets', adminOnly: true },

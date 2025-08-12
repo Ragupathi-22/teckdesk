@@ -20,7 +20,14 @@ export interface TicketStatus {
   status: string;
   isActive: boolean;
   sortOrder: number;
-  color :string;
+  color: string;
+}
+
+export interface OperatingSystem {
+  operatingSystem: string;
+  isActive: boolean;
+  sortOrder: number;
+  version: string[]
 }
 
 export interface Company {
@@ -28,10 +35,15 @@ export interface Company {
   code: string;
   name: string;
   isActive: boolean;
-  sortOrder :number;
+  sortOrder: number;
   empPass: string;
+  sentMailToEmpRegister :boolean;
+  sentMailToEmpTicketUpdate :boolean;
   teams: Team[];
+  operatingSystems: OperatingSystem[];
+  ramOptions: string[];
+  driveOptions: string[];
   assetStatus: AssetStatus[];
   ticketCategory: TicketCategory[];
-  ticketStatus :TicketStatus[];
+  ticketStatus: TicketStatus[];
 }

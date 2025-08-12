@@ -82,7 +82,8 @@ export class TicketService {
     try {
       const mailRef = collection(db, 'admin');
       const q = query(mailRef, 
-        where('isActive', '==', true)
+        where('isActive', '==', true),
+        where('mailFromEmployee', '==', true)
       );
       const snapshot = await getDocs(q);
       const emails = snapshot.docs
@@ -313,8 +314,8 @@ export class TicketService {
       }
 
       //sent mail to employee
-
-      if (environment.SentMailToEmployee && isAdmin) {
+      const mailPermission = (await this.dataService.getCompany())?.sentMailToEmpTicketUpdate;
+      if (mailPermission && isAdmin) {
 
         const employee =await this.dataService.getEmployeeById(raisedBy);
 

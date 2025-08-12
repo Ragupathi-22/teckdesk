@@ -89,7 +89,7 @@ export class Users implements OnInit {
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       team: ['', Validators.required],
-      dateOfJoining :['']
+      dateOfJoining: ['', Validators.required]
     });
   }
 
@@ -179,6 +179,7 @@ export class Users implements OnInit {
   onSubmit() {
     if (this.userForm.invalid) {
       this.toastr.error('Please fill out all required fields correctly.');
+      this.userForm.markAllAsTouched();
       return;
     }
 
@@ -249,26 +250,29 @@ export class Users implements OnInit {
         await setDoc(userDocRef, userPayload);
         this.toastr.success('User added successfully.');
 
-        // Sent mail to employee regarding register
-        this.mailService.mailToEmployeeForAccountCreation(
-          email,  //email =email
-          email, // username = email
-          password,
-          environment.LiveSiteURLForEmployee
-        )?.subscribe({
-          next: (res) => {
-            if (res.success) {
-              this.toastr.success('Mail Sent to Employee');
+        const mailPermission = (await this.dataService.getCompany())?.sentMailToEmpRegister || false;
+        if (mailPermission) {
+          // Sent mail to employee regarding register
+          this.mailService.mailToEmployeeForAccountCreation(
+            email,  //email =email
+            email, // username = email
+            password,
+            environment.LiveSiteURLForEmployee
+          )?.subscribe({
+            next: (res) => {
+              if (res.success) {
+                this.toastr.success('Mail Sent to Employee');
+              }
+              if (!res.success) {
+                console.warn('Mail sending failed:', res.error);
+              }
+            },
+            error: (err) => {
+              console.error('Mail error:', err);
             }
-            if (!res.success) {
-              console.warn('Mail sending failed:', res.error);
-            }
-          },
-          error: (err) => {
-            console.error('Mail error:', err);
-          }
-        });
+          });
 
+        }
 
         this.closeForm();
         this.reload$.next();
@@ -285,7 +289,7 @@ export class Users implements OnInit {
       name: user.name,
       email: user.email,
       team: user.team,
-      dateOfJoining :user.dateOfJoining,
+      dateOfJoining: user.dateOfJoining,
       role: 'employee'
     });
 
@@ -382,11 +386,11 @@ export class Users implements OnInit {
         Email: user.email || '',
         Team: user.team || '',
         Role: user.role || '',
-        Date_Of_Join : user.dateOfJoining || ''
+        Date_Of_Join: user.dateOfJoining || ''
       }));
 
       const worksheet = XLSX.utils.aoa_to_sheet([
-        ['User Details'],
+        [`User Details: ${this.selectedCompany?.name || ''}`],
         [`Team Filter: ${this.filterTeamControl.value || 'All'}`],
         [`Generated on: ${new Date().toLocaleDateString('en-GB', {
           day: 'numeric',

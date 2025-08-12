@@ -2,12 +2,12 @@
 import { inject, Injectable, computed, signal } from '@angular/core';
 import { AuthService, Role } from '../auth/auth.service';
 import { User } from 'firebase/auth';
-import { LookupService } from '../../shared/service/company.service';
 import { AssetStatus, Company, Team, TicketCategory, TicketStatus } from '../models/company.models';
 import { EmployeeService } from '../../features/admin/users/service/employee-service';
 import { UserModel } from '../models/user.model';
 import { AssetModel } from '../models/asset.model';
 import { AssetService } from '../../features/admin/admin-assets/service/asset-service';
+import { LookupService } from './company.service';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
@@ -68,6 +68,22 @@ export class DataService {
     return id ? this.lookup.getTicketCategoryByCompany(id) : [];
   }
 
+  getOperatingSystems(): string[] {
+    const id = this.getCompanyId();
+    const company = id ? this.lookup.getCompanyById(id) : undefined;
+    return company ? company.operatingSystems.map(os => os.operatingSystem) : [];
+  }
+  getRamOptions(): string[] {
+    const id = this.getCompanyId();
+    const company = id ? this.lookup.getCompanyById(id) : undefined;
+    return company ? company.ramOptions : [];
+  } 
+  getDriveOptions(): string[] {
+    const id = this.getCompanyId();
+    const company = id ? this.lookup.getCompanyById(id) : undefined;
+    return company ? company.driveOptions : [];
+  }
+
 
   // ✅ New employee-related methods
 
@@ -75,8 +91,6 @@ export class DataService {
     const uid = this.getFirebaseUser()?.uid;
     return uid ? await this.getEmployeeById(uid) : null;
   }
-
-
 
   async getEmployeesByCompany(): Promise<UserModel[]> {
     const companyId = this.getCompanyId();

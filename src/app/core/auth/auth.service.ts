@@ -70,6 +70,13 @@ export class AuthService {
     let snap = await getDoc(docRef);
 
     if (snap.exists()) {
+      
+     const adminData = snap.data() as any;
+          // Check if admin is active
+    if (adminData.isActive === false) {
+      throw new Error('Your admin account has been disabled.');
+    }
+
       const role: Role = 'admin';
       this._role$.next(role);
 

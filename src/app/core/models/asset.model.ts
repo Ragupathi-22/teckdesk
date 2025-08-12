@@ -22,14 +22,16 @@ export interface AssetModel {
   assignedTo?: string;
   assignedToName?: string;
   os?: string;
+  osVersion?:string;
   ram?: string;
   drive?: string;
   serialNumber?: string;
   purchaseDate: string;
   peripherals?: string;
   history?: HistoryEntry[];
-  comapnyId: string;
+  companyId: string;
   installedSoftware?: SoftwareEntry[];
+  tagLower?: string; // For case-insensitive search
 }
 
 
@@ -40,17 +42,20 @@ export class AssetFields {
     { key: 'model', label: 'Model', selected: true },
     { key: 'tag', label: 'Tag', selected: true },
     { key: 'status', label: 'Status', selected: true },
-    { key: 'assignedTo', label: 'Assigned To ID', selected: false },
     { key: 'assignedToName', label: 'Assigned To Name', selected: true },
-    { key: 'os', label: 'Operating System', selected: false },
-    { key: 'ram', label: 'RAM', selected: false },
-    { key: 'drive', label: 'Drive', selected: false },
-    { key: 'serialNumber', label: 'Serial Number', selected: false },
+    { key: 'os', label: 'Operating System', selected: true },
+    { key: 'osVersion', label: 'OS Version', selected: true },
+    { key: 'ram', label: 'RAM', selected: true },
+    { key: 'drive', label: 'Drive', selected: true },
+    { key: 'serialNumber', label: 'Serial Number', selected: true },
     { key: 'purchaseDate', label: 'Purchase Date', selected: true },
+    { key: 'installedSoftware', label: 'Installed Software', selected: false },
     { key: 'peripherals', label: 'Peripherals', selected: false },
     { key: 'history', label: 'History', selected: false },
-    { key: 'installedSoftware', label: 'Installed Software', selected: false },
-    { key: 'comapnyId', label: 'Company ID', selected: false }
+    { key: 'companyId', label: 'Company ID', selected: false },
+    { key: 'assignedTo', label: 'Assigned To ID', selected: false },
+    { key: 'tagLower', label: 'Tag Lower', selected: false },
+    { key: 'id', label: 'Id', selected: false }
   ];
 
 }

@@ -49,6 +49,7 @@ export class AdminRegister {
   async onSubmit() {
     if (this.adminForm.invalid) {
       this.toastr.error('Please fill all required fields correctly.');
+      this.adminForm.markAllAsTouched();
       return;
     }
 
@@ -90,8 +91,7 @@ export class AdminRegister {
             email: email,
             role: 'admin', 
             mailFromEmployee :true,
-            mailToEmployeeForRegister:true,
-            mailToEmployeeForTicket :true,        
+            color:'#4c51bf', // Default color   
             isActive: true,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),

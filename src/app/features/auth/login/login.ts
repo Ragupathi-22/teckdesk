@@ -24,7 +24,7 @@ export class Login implements OnInit {
   toastr = inject(ToastService);
   loading = inject(LoadingService);
   lucideIcon = LucideIconCollection;
-  showPassword=false;
+  showPassword = false;
 
   form!: FormGroup;
   isLoading = false;
@@ -36,29 +36,62 @@ export class Login implements OnInit {
     });
   }
 
-async onSubmit(): Promise<void> {
-  if (this.form.invalid) {
-    this.toastr.error('Please enter valid credentials');
-    return;
-  }
-
-  const { email, password } = this.form.value;
-
-  try {
-    this.isLoading = true;
-    const { role } = await this.auth.login(email, password);
-
-    if (role === 'employee') {
-      this.router.navigate(['/employee/dashboard']);
-    } else if (role === 'admin') {
-      this.router.navigate(['/admin/dashboard']);
+  async onSubmit(): Promise<void> {
+    if (this.form.invalid) {
+      this.toastr.error('Please enter credentials');
+      this.form.markAllAsTouched();
+      return;
     }
-  } catch (err: any) {
-    console.error('Login failed:', err);
-    this.toastr.error(getAuthErrorMessage(err));
-  } finally {
-    this.isLoading = false;
+
+    const { email, password } = this.form.value;
+
+    try {
+      this.isLoading = true;
+      const { role } = await this.auth.login(email, password);
+
+      if (role === 'employee') {
+        this.router.navigate(['/employee/dashboard']);
+      } else if (role === 'admin') {
+        this.router.navigate(['/admin/dashboard']);
+      }
+    } catch (err: any) {
+  console.error('Login failed:', err);
+
+  let message = 'An unexpected error occurred. Please try again.';
+
+  switch (err.code) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      message = 'Invalid email or password.';
+      break;
+
+    case 'auth/user-disabled':
+      message = 'Your account has been disabled. Please contact support.';
+      break;
+
+    case 'auth/too-many-requests':
+      message = 'Too many failed login attempts. Please try again later.';
+      break;
+
+    case 'auth/network-request-failed':
+      message = 'Network error. Please check your internet connection.';
+      break;
+
+    default:
+      // For custom error messages from your app (non Firebase errors)
+      if (err.message === 'Your admin account has been disabled.') {
+        message = 'Your admin account has been disabled.';
+      } else if (err.message === 'User document not found') {
+        message = 'User document not found. Please contact support.';
+      }
+      break;
   }
-}
+      this.toastr.error(message);
+    }
+    finally {
+      this.isLoading = false;
+    }
+  }
 
 }

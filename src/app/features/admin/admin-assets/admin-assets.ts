@@ -8,7 +8,7 @@ import { db } from '../../../firebase.config';
 import { ToastService } from '../../../shared/service/toast.service';
 import { DataService } from '../../../core/services/data.service';
 import { LoadingService } from '../../../shared/service/loading.service';
-import { AssetStatus, Company } from '../../../core/models/company.models';
+import { AssetStatus, Company, OperatingSystem } from '../../../core/models/company.models';
 import { debounceTime, distinctUntilChanged, startWith, switchMap, tap, catchError } from 'rxjs/operators';
 import { of, combineLatest, Subject } from 'rxjs';
 import { LucideIconCollection } from '../../../shared/icons/lucide-icons';
@@ -39,6 +39,9 @@ export class AdminAssets implements OnInit, OnDestroy {
 
   selectedCompany: Company | undefined;
   filteredStatus: AssetStatus[] = [];
+  operatingSystems: OperatingSystem[] = [];
+  ramOptions: string[] = [];
+  driveOptions: string[] = [];
   employeesByCompany = signal<UserModel[]>([]);
   assetForm!: FormGroup;
   showForm = signal(false);
@@ -79,8 +82,10 @@ export class AdminAssets implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedCompany = this.dataService.getCompany();
-    this.filteredStatus = this.dataService.getAssetStatusByCompany() || [];
-
+    this.filteredStatus = this.selectedCompany?.assetStatus || [];
+    this.operatingSystems = this.selectedCompany?.operatingSystems || [];
+    this.ramOptions = this.selectedCompany?.ramOptions || [];
+    this.driveOptions = this.selectedCompany?.driveOptions || [];
     if (this.selectedCompany?.id) {
       this.loadingService.show();
       this.dataService.getEmployeesByCompany().then((employees) => {
@@ -113,7 +118,7 @@ export class AdminAssets implements OnInit, OnDestroy {
               role: 'employee',
               companyId: '',
               team: '',
-              dateOfJoining:''
+              dateOfJoining: ''
             },
             ...defaultResults
           ]);
@@ -140,7 +145,7 @@ export class AdminAssets implements OnInit, OnDestroy {
           role: 'employee',
           companyId: '',
           team: '',
-          dateOfJoining:''
+          dateOfJoining: ''
         },
         ...results
       ]);
@@ -154,6 +159,22 @@ export class AdminAssets implements OnInit, OnDestroy {
     document.removeEventListener('click', this.onDocumentClick.bind(this));
   }
 
+  versions = signal<string[]>([]);
+
+  onOSChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const osName = select.value;
+
+    if (!osName) {
+      this.versions.set([]);
+      return;
+    }
+
+    const os = this.operatingSystems.find(o => o.operatingSystem === osName);
+    this.versions.set(os ? os.version : []);
+  }
+
+
   initForm() {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],
@@ -164,6 +185,7 @@ export class AdminAssets implements OnInit, OnDestroy {
       assignedTo: [''],
       assignedToName: [''],
       os: [''],
+      osVersion: [''],
       ram: [''],
       drive: [''],
       serialNumber: [''],
@@ -220,8 +242,10 @@ export class AdminAssets implements OnInit, OnDestroy {
   addHistory() {
     if (this.historyForm.invalid) {
       this.toastr.error('Please fill required fields');
+      this.historyForm.markAllAsTouched();
       return;
     }
+
     this.historyArray.push({
       note: this.historyForm.value.note,
       date: this.historyForm.value.date
@@ -236,6 +260,7 @@ export class AdminAssets implements OnInit, OnDestroy {
   addSoftware() {
     if (this.softwareForm.invalid) {
       this.toastr.error('Please fill required fields..');
+      this.softwareForm.markAllAsTouched();
       return;
     }
 
@@ -279,7 +304,7 @@ export class AdminAssets implements OnInit, OnDestroy {
         role: 'employee',
         companyId: '',
         team: '',
-        dateOfJoining:''
+        dateOfJoining: ''
       }, ...defaultResults]);
     }
   }
@@ -324,7 +349,7 @@ export class AdminAssets implements OnInit, OnDestroy {
           const results: any[] = [];
           if (!this.selectedCompany?.id) return results;
           const ref = collection(db, 'assets');
-          const baseQuery = query(ref, where('comapnyId', '==', this.selectedCompany.id));
+          const baseQuery = query(ref, where('companyId', '==', this.selectedCompany.id));
           const snapshot = await getDocs(baseQuery);
           snapshot.forEach((docSnap) => {
             const data = { id: docSnap.id, ...docSnap.data() };
@@ -444,7 +469,7 @@ export class AdminAssets implements OnInit, OnDestroy {
     try {
       // 🔍 Check for existing tag with same lowercase
       const assetRef = collection(db, 'assets');
-      const q = query(assetRef, where('tagLower', '==', tagLower), where('comapnyId', '==', companyId));
+      const q = query(assetRef, where('tagLower', '==', tagLower), where('companyId', '==', companyId));
       const querySnapshot = await getDocs(q);
 
       const duplicate = querySnapshot.docs.find(docSnap => {
@@ -459,7 +484,7 @@ export class AdminAssets implements OnInit, OnDestroy {
       const payload: any = {
         ...this.assetForm.value,
         tagLower,
-        comapnyId: companyId,
+        companyId: companyId,
         history: this.historyArray,
         installedSoftware: this.softwareArray
       };
@@ -593,7 +618,7 @@ export class AdminAssets implements OnInit, OnDestroy {
 
           // Flatten arrays for export
           if (key === 'history' && Array.isArray(value)) {
-            value = value.map((h: any) => `${h.description} (${h.date})`).join('; ');
+            value = value.map((h: any) => `${h.note} (${h.date})`).join('; ');
           }
           if (key === 'installedSoftware' && Array.isArray(value)) {
             value = value.map((s: any) => `${s.name} ${s.version || ''}`).join('; ');
@@ -610,7 +635,7 @@ export class AdminAssets implements OnInit, OnDestroy {
 
       // Create worksheet with header space
       const worksheet = XLSX.utils.aoa_to_sheet([
-        ['Asset Detail'], // Row 1
+        [`Asset Detail: ${this.selectedCompany?.name || ''}`], // Row 1
         [`Status: ${this.filterStatusControl.value || 'All'}`],
         [`Generated on: ${new Date().toLocaleDateString('en-GB', {
           day: 'numeric',
@@ -621,8 +646,8 @@ export class AdminAssets implements OnInit, OnDestroy {
       ]);
 
       // Heading (Row 1)
-      const headingTitle = [['Asset Detail']];
-      XLSX.utils.sheet_add_aoa(worksheet, headingTitle, { origin: 'A1' });
+      // const headingTitle = [['Asset Detail']];
+      // XLSX.utils.sheet_add_aoa(worksheet, headingTitle, { origin: 'A1' });
 
       // Filter row (Row 2)
       const filterRow = [[`Status: ${this.filterStatusControl.value || 'All'}`]];
@@ -679,6 +704,91 @@ export class AdminAssets implements OnInit, OnDestroy {
     } finally {
       this.loadingService.hide();
     }
+  }
+
+
+  // Signal to control modal visibility and hold the asset to print
+  printModalOpen = signal(false);
+  printAsset = signal<any | null>(null);
+  
+  async openPrintModal(asset: any) {
+    this.printAsset.set(asset);
+    this.printModalOpen.set(true);
+
+  }
+
+  closePrintModal() {
+    this.printModalOpen.set(false);
+    this.printAsset.set(null);
+  }
+
+  printSticker() {
+    if (!this.printAsset()) return;
+
+    // Open a new window for printing
+    const printWindow = window.open('', 'PrintWindow', 'width=400,height=300');
+    if (!printWindow) {
+      this.toastr.error('Failed to open print preview');
+      return;
+    }
+
+    const asset = this.printAsset();
+
+    const htmlContent = `
+            <html>
+              <head>
+                <title>Print Asset Sticker</title>
+                <style>
+          body {
+            margin: 0;
+            padding: 0;
+          }
+          .sticker {
+            width: 100mm;
+            height: 50mm;
+            padding: 5mm;
+            box-sizing: border-box;
+            border: 1px solid #000;
+            font-family: Arial, sans-serif;
+            font-size: 12pt;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+          .sticker h3 {
+            margin: 0 0 4mm 0;
+            font-size: 14pt;
+          }
+          .sticker p {
+            margin: 2mm 0;
+          }
+          @page {
+            size: 100mm 50mm;
+            margin: 0;
+          }
+        </style>
+
+      </head>
+      <body>
+        <div class="sticker">
+          <h3>${asset.name} - ${asset.model || '-'}</h3>
+          <p><strong>Company:</strong>${this.selectedCompany!.name} </p>
+          <p><strong>Tag:</strong> ${asset.tag}</p>
+          <p><strong>Serial Number:</strong> ${asset.serialNumber || '-'}</p>
+          <p><strong>Assigned To:</strong> ${asset.assignedToName || '-'}</p>
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+            window.onafterprint = function() { window.close(); }
+          }
+        </script>
+      </body>
+    </html>
+  `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   }
 
 }

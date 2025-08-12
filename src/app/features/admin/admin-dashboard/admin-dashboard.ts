@@ -177,5 +177,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
       this.recentAssets = assets.slice(-5).reverse();
 
     });
+
+    this.assetStatusColor = this.dataService.getAssetStatusByCompany();
+    this.ticketStatusColor = this.dataService.getTicketStatus();
   }
 }

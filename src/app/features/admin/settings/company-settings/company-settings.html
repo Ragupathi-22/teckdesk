@@ -3,18 +3,14 @@
   <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
     <select
       class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-auto"
-      [value]="selectedCompanyId() || ''"
-      (change)="selectCompany($event)"
-    >
+      [value]="selectedCompanyId() || ''" (change)="selectCompany($event)">
       <option value="">-- Select Company --</option>
       <option *ngFor="let c of companies()" [value]="c.id">{{ c.name }}</option>
     </select>
 
     <button
       class="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-md shadow w-full sm:w-auto"
-      (click)="createNewCompany()"
-      type="button"
-    >
+      (click)="createNewCompany()" type="button">
       + Create New Company
     </button>
   </div>
@@ -26,53 +22,65 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
         <input
           class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          [(ngModel)]="editedCompany()!.name"
-          placeholder="Name"
-          type="text"
-        />
+          [(ngModel)]="editedCompany()!.name" placeholder="Name" type="text" />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Code</label>
         <input
           class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          [(ngModel)]="editedCompany()!.code"
-          placeholder="Code..NTPL"
-          type="text"
-        />
+          [(ngModel)]="editedCompany()!.code" placeholder="Code..NTPL" type="text" />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-        <input
-          type="number"
+        <input type="number"
           class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          [(ngModel)]="editedCompany()!.sortOrder"
-          placeholder="Sort Company Order"
-        />
+          [(ngModel)]="editedCompany()!.sortOrder" placeholder="Sort Company Order" />
       </div>
 
       <div class="sm:col-span-1">
         <label class="block text-sm font-medium text-gray-700 mb-1">Employee Password</label>
         <input
           class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          [(ngModel)]="editedCompany()!.empPass"
-          placeholder="Employee Default Password"
-          type="text"
-        />
+          [(ngModel)]="editedCompany()!.empPass" placeholder="Employee Default Password" type="text" />
       </div>
 
-      <div class="flex items-center gap-2 mt-6 col-span-full">
-        <input
-          type="checkbox"
-          id="companyActive"
+      <div class="flex items-center gap-2 mt-6 col-span-1">
+        <input type="checkbox" id="companyActive"
           class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-          [(ngModel)]="editedCompany()!.isActive"
-        />
+          [(ngModel)]="editedCompany()!.isActive" />
         <label for="companyActive" class="text-gray-700 font-medium select-none">
           Active (Company Status)
         </label>
       </div>
+      
+      <div class="flex items-center gap-2 mt-6 col-span-1">
+        <input type="checkbox" id="sentMailToEmpRegister"
+          class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          [(ngModel)]="editedCompany()!.sentMailToEmpRegister" />
+        <label for="sentMailToEmpRegister" class="text-gray-700 font-medium select-none">
+          Send registration email to employee
+        </label>
+      </div>
+
+      <div class="flex items-center gap-2 mt-6 col-span-1">
+        <input type="checkbox" id="sentMailToEmpTicketUpdate"
+          class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          [(ngModel)]="editedCompany()!.sentMailToEmpTicketUpdate" />
+        <label for="sentMailToEmpTicketUpdate" class="text-gray-700 font-medium select-none">
+          Send email to employee when ticket is Update
+        </label>
+      </div>
+
+      <div class="flex items-center gap-1 mt-4 col-span-1" *ngIf="!newCompany()">
+        <button (click)="deleteCompany(editedCompany()!.id)"
+          class="flex items-center gap-1 px-2 py-1 bg-red-600 text-white text-md rounded hover:bg-red-800">
+          <lucide-icon [name]="LucideIcon.AlertTriangleIcon" class="w-4 h-4" />
+          Delete Company
+        </button>
+      </div>
+
     </div>
 
     <!-- Second Row: Teams & Asset Status -->
@@ -95,42 +103,29 @@
                 <td class="p-2">
                   <input
                     class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="t.team"
-                  />
+                    [(ngModel)]="t.team" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    [(ngModel)]="t.isActive"
-                  />
+                  <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    [(ngModel)]="t.isActive" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="number"
+                  <input type="number"
                     class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="t.sortOrder"
-                  />
+                    [(ngModel)]="t.sortOrder" />
                 </td>
                 <td class="p-2 text-center">
-                  <button
-                    type="button"
-                    (click)="removeItem('teams', i)"
-                    class="text-red-600 hover:text-red-800"
-                    aria-label="Remove Team"
-                  >
-                    ❌
-                  </button>
+                  <lucide-icon [name]="LucideIcon.XCircle" (click)="removeItem('teams', i)"
+                    class="text-red-600 hover:text-red-800" />
+
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <button
-          type="button"
+        <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('teams', { team: '', isActive: true, sortOrder: 1 })"
-        >
+          (click)="addItem('teams', { team: '', isActive: true, sortOrder: 1 })">
           + Add Team
         </button>
       </div>
@@ -154,49 +149,34 @@
                 <td class="p-2">
                   <input
                     class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="a.status"
-                  />
+                    [(ngModel)]="a.status" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="color"
-                    class="w-10 h-8 border border-gray-300 rounded cursor-pointer"
-                    [(ngModel)]="a.color"
-                  />
+                  <input type="color" class="w-10 h-8 border border-gray-300 rounded cursor-pointer"
+                    [(ngModel)]="a.color" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    [(ngModel)]="a.isActive"
-                  />
+                  <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    [(ngModel)]="a.isActive" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="number"
+                  <input type="number"
                     class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="a.sortOrder"
-                  />
+                    [(ngModel)]="a.sortOrder" />
                 </td>
                 <td class="p-2 text-center">
-                  <button
-                    type="button"
-                    (click)="removeItem('assetStatus', i)"
-                    class="text-red-600 hover:text-red-800"
-                    aria-label="Remove Asset Status"
-                  >
-                    ❌
-                  </button>
+
+                  <lucide-icon [name]="LucideIcon.XCircle" (click)="removeItem('assetStatus', i)"
+                    class="text-red-600 hover:text-red-800" />
+
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <button
-          type="button"
+        <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('assetStatus', { status: '', color: '#000000', isActive: true, sortOrder: 1 })"
-        >
+          (click)="addItem('assetStatus', { status: '', color: '#000000', isActive: true, sortOrder: 1 })">
           + Add Asset Status
         </button>
       </div>
@@ -222,42 +202,30 @@
                 <td class="p-2">
                   <input
                     class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="c.category"
-                  />
+                    [(ngModel)]="c.category" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    [(ngModel)]="c.isActive"
-                  />
+                  <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    [(ngModel)]="c.isActive" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="number"
+                  <input type="number"
                     class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="c.sortOrder"
-                  />
+                    [(ngModel)]="c.sortOrder" />
                 </td>
                 <td class="p-2 text-center">
-                  <button
-                    type="button"
-                    (click)="removeItem('ticketCategory', i)"
-                    class="text-red-600 hover:text-red-800"
-                    aria-label="Remove Ticket Category"
-                  >
-                    ❌
-                  </button>
+
+                  <lucide-icon [name]="LucideIcon.XCircle" (click)="removeItem('ticketCategory', i)"
+                    class="text-red-600 hover:text-red-800" />
+
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <button
-          type="button"
+        <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('ticketCategory', { category: '', isActive: true, sortOrder: 1 })"
-        >
+          (click)="addItem('ticketCategory', { category: '', isActive: true, sortOrder: 1 })">
           + Add Category
         </button>
       </div>
@@ -281,68 +249,183 @@
                 <td class="p-2">
                   <input
                     class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="s.status"
-                  />
+                    [(ngModel)]="s.status" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="color"
-                    class="w-10 h-8 border border-gray-300 rounded cursor-pointer"
-                    [(ngModel)]="s.color"
-                  />
+                  <input type="color" class="w-10 h-8 border border-gray-300 rounded cursor-pointer"
+                    [(ngModel)]="s.color" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    [(ngModel)]="s.isActive"
-                  />
+                  <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    [(ngModel)]="s.isActive" />
                 </td>
                 <td class="p-2 text-center">
-                  <input
-                    type="number"
+                  <input type="number"
                     class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    [(ngModel)]="s.sortOrder"
-                  />
+                    [(ngModel)]="s.sortOrder" />
                 </td>
                 <td class="p-2 text-center">
-                  <button
-                    type="button"
-                    (click)="removeItem('ticketStatus', i)"
-                    class="text-red-600 hover:text-red-800"
-                    aria-label="Remove Ticket Status"
-                  >
-                    ❌
-                  </button>
+                  <lucide-icon [name]="LucideIcon.XCircle" (click)="removeItem('ticketStatus', i)"
+                    class="text-red-600 hover:text-red-800" />
+
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <button
-          type="button"
+        <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('ticketStatus', { status: '', color: '#000000', isActive: true, sortOrder: 1 })"
-        >
+          (click)="addItem('ticketStatus', { status: '', color: '#000000', isActive: true, sortOrder: 1 })">
           + Add Ticket Status
         </button>
       </div>
     </div>
 
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+      <!-- RAM Options -->
+      <div>
+        <h2 class="font-semibold text-lg text-gray-900 mb-3 border-b pb-2">RAM Options</h2>
+        <ng-container *ngIf="editedCompany() as company">
+          <div class="overflow-x-auto">
+            <table class="w-full border border-gray-300 rounded-md text-sm min-w-[300px]">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="border-b border-gray-300 p-2 text-left">RAM Size</th>
+                  <th class="border-b border-gray-300 p-2 w-16"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of company.ramOptions; let i = index ;trackBy: trackByIndex" class="hover:bg-gray-50">
+                  <td class="p-2">
+                    <input [(ngModel)]="company.ramOptions[i]"
+                      class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  </td>
+                  <td class="p-2 text-center">
+                    <lucide-icon [name]="LucideIcon.XCircle" (click)="removeStringItem('ramOptions', i)"
+                      class="text-red-600 hover:text-red-800" />
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button (click)="addStringItem('ramOptions')"
+            class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto">
+            + Add RAM
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- Drive Options -->
+      <div>
+        <h2 class="font-semibold text-lg text-gray-900 mb-3 border-b pb-2">Drive Options</h2>
+        <ng-container *ngIf="editedCompany() as company">
+          <div class="overflow-x-auto">
+            <table class="w-full border border-gray-300 rounded-md text-sm min-w-[300px]">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="border-b border-gray-300 p-2 text-left">Drive Size</th>
+                  <th class="border-b border-gray-300 p-2 w-16"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let d of company.driveOptions; let i = index; trackBy: trackByIndex"
+                  class="hover:bg-gray-50">
+                  <td class="p-2">
+                    <input [(ngModel)]="company.driveOptions[i]"
+                      class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  </td>
+                  <td class="p-2 text-center">
+                    <lucide-icon [name]="LucideIcon.XCircle" (click)="removeStringItem('driveOptions', i)"
+                      class="text-red-600 hover:text-red-800" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button (click)="addStringItem('driveOptions')"
+            class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto">
+            + Add Drive
+          </button>
+        </ng-container>
+      </div>
+
+
+    </div>
+
+    <!-- Operating Systems -->
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900 mb-3 border-b pb-2">Operating Systems</h2>
+      <ng-container *ngIf="editedCompany() as company">
+        <div class="overflow-x-auto">
+          <table class="w-full border border-gray-300 rounded-md text-sm min-w-[500px]">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="border-b border-gray-300 p-2 text-left">OS Name</th>
+                <th class="border-b border-gray-300 p-2 text-center">Active</th>
+                <th class="border-b border-gray-300 p-2 text-center">Order</th>
+                <th class="border-b border-gray-300 p-2 text-left">Versions</th>
+                <th class="border-b border-gray-300 p-2 w-16"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let os of company.operatingSystems; let osi = index; trackBy: trackByIndex"
+                class="align-top hover:bg-gray-50">
+                <td class="p-2">
+                  <input [(ngModel)]="os.operatingSystem" placeholder="OS Name"
+                    class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                </td>
+                <td class="p-2 text-center">
+                  <input type="checkbox" [(ngModel)]="os.isActive"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                </td>
+                <td class="p-2 text-center">
+                  <input type="number" [(ngModel)]="os.sortOrder"
+                    class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                </td>
+                <td class="p-2">
+                  <!-- Versions List -->
+                  <div class="max-h-40 overflow-y-auto pr-1">
+                    <div *ngFor="let v of os.version; let vi = index; trackBy: trackByIndex" class="flex gap-2 mb-1">
+                      <input [(ngModel)]="os.version[vi]" placeholder="Version"
+                        class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+
+                      <lucide-icon [name]="LucideIcon.XCircle" (click)="removeOSVersion(osi, vi)"
+                        class="text-red-600 hover:text-red-800" />
+
+                    </div>
+                  </div>
+                  <button (click)="addOSVersion(osi)"
+                    class="mt-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                    + Add Version
+                  </button>
+                </td>
+                <td class="p-2 text-center">
+                  <lucide-icon [name]="LucideIcon.XCircle" (click)="removeOperatingSystem(osi)"
+                    class="text-red-600 hover:text-red-800" />
+
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button (click)="addOperatingSystem()"
+          class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto">
+          + Add OS
+        </button>
+      </ng-container>
+    </div>
+
+
+
     <!-- Save & Cancel Buttons -->
-    <div class="flex flex-col sm:flex-row gap-4">
-      <button
-        class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded shadow w-full sm:w-auto"
-        (click)="saveChanges()"
-        type="button"
-      >
+    <div class="flex flex-col sm:flex-row gap-4 mt-8">
+      <button class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded shadow w-full sm:w-auto"
+        (click)="saveChanges()" type="button">
         Save Changes
       </button>
-      <button
-        class="bg-gray-400 hover:bg-gray-500 text-white font-semibold px-6 py-2 rounded shadow w-full sm:w-auto"
-        (click)="cancelChanges()"
-        type="button"
-      >
+      <button class="bg-gray-400 hover:bg-gray-500 text-white font-semibold px-6 py-2 rounded shadow w-full sm:w-auto"
+        (click)="cancelChanges()" type="button">
         Cancel
       </button>
     </div>

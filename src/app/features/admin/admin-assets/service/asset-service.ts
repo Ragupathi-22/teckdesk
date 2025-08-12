@@ -16,7 +16,7 @@ export class AssetService {
  
   async getAssetsByCompany(companyId: string): Promise<AssetModel[]> {
     const ref = collection(db, this.collectionName);
-    const q = query(ref, where('comapnyId', '==', companyId));
+    const q = query(ref, where('companyId', '==', companyId));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() } as AssetModel));
   }
@@ -40,7 +40,7 @@ export class AssetService {
     }
 
     const assetRef = collection(db, 'assets');
-    const q = query(assetRef, where('comapnyId', '==', companyId));
+    const q = query(assetRef, where('companyId', '==', companyId));
 
     this.unsubscribe = onSnapshot(
       q,

@@ -9,7 +9,6 @@ export const environment = {
         appId: "1:61198095525:web:0006670ad148aee7cd694c",
         measurementId: "G-3W0J3XTE6K"
     },
-    SentMailToEmployee :true,
     LiveSiteURLForEmployee: 'http://localhost/teckdesk/',
     // Base_API :"http://localhost/teckdesk/",
     Base_API :"https://cwpteam.ntplstaging.com/Ragu/teckdesk/",

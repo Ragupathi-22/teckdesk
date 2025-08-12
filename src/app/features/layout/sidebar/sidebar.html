@@ -15,7 +15,7 @@
   <div class="p-4 border-b border-indigo-700">
     <h1 class="text-xl font-bold">IT Asset Manager</h1>
     <div class="mt-2 text-sm text-indigo-200">
-      {{ company }} - {{ role === 'admin' ? 'Admin' : 'Employee' }}
+      {{ dataService.getCompany()?.name }} - {{ this.dataService.getRole() === 'admin' ? 'Admin' : 'Employee' }}
     </div>
   </div>
 

@@ -6,6 +6,15 @@ export const DEFAULT_COMPANY_DATA: Omit<Company, 'id'> = {
   isActive: true,
   sortOrder: 1,
   empPass: 'NTPL@2025', 
+  sentMailToEmpTicketUpdate :true,
+  sentMailToEmpRegister :true,
+  ramOptions: ['8GB', '16GB', '32GB'],
+  driveOptions: ['256GB', '512GB', '1TB'],  
+  operatingSystems: [
+    { operatingSystem: 'Windows', isActive: true, sortOrder: 1, version: ["10","11"] },
+    { operatingSystem: 'mac', isActive: true, sortOrder: 2, version: ["air","pro"] },
+    { operatingSystem: 'Linux', isActive: true, sortOrder: 3, version: ["l1","l2"] }
+  ],
   teams: [
     { team: 'IT Support', isActive: true, sortOrder: 1 },
     { team: 'HR', isActive: true, sortOrder: 2 },
