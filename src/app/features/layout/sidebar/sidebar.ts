@@ -28,7 +28,8 @@ export class SidebarComponent {
     { to: '/admin/tickets', icon: this.LucideIcons.Ticket, label: 'Tickets' ,adminOnly: true},
     { to: '/admin/settings', icon: this.LucideIcons.Settings, label: 'Settings', adminOnly: true },
     { to: '/employee/dashboard', icon: this.LucideIcons.LayoutDashboard, label: 'Dashboard', employeeOnly: true },
-    { to: '/employee/ticket', icon: this.LucideIcons.Ticket, label: 'Ticket' ,employeeOnly: true},
+    { to: '/employee/assets', icon: this.LucideIcons.Ticket, label: 'Assets' ,employeeOnly: true},
+    { to: '/employee/tickets', icon: this.LucideIcons.Monitor, label: 'Ticket' ,employeeOnly: true}
 
   ];
 

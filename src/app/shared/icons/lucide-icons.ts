@@ -1,5 +1,5 @@
 // src/app/shared/icons/lucide-icons.ts
-import { Lock, Mail, Building, Users, User, Search, ArrowLeft, CheckCircle, Monitor, Laptop, Ticket, LogOut, LayoutDashboard, Bell, Menu, Edit, Trash, Plus, Filter, Funnel, icons, Info, X, LogIn, AlertCircle, Clock, XCircle, Eye, MessageSquare, History, MessageCircle, UserCheck, Wrench, Box, HelpCircle, PlusCircle, PlusCircleIcon, EyeOff, EyeIcon, Settings, Layers, Cpu, FileSpreadsheet, GripVertical, Download, CheckCircle2, Package, ClipboardList, AlertTriangleIcon, Printer} from 'lucide-angular';
+import { Lock, Mail, Building, Users, User, Search, ArrowLeft, CheckCircle, Monitor, Laptop, Ticket, LogOut, LayoutDashboard, Bell, Menu, Edit, Trash, Plus, Filter, Funnel, icons, Info, X, LogIn, AlertCircle, Clock, XCircle, Eye, MessageSquare, History, MessageCircle, UserCheck, Wrench, Box, HelpCircle, PlusCircle, PlusCircleIcon, EyeOff, EyeIcon, Settings, Layers, Cpu, FileSpreadsheet, GripVertical, Download, CheckCircle2, Package, ClipboardList, AlertTriangleIcon, Printer } from 'lucide-angular';
 
 export const LucideIconCollection = {
   Lock,
@@ -32,7 +32,7 @@ export const LucideIconCollection = {
   MessageSquare,
   History,
   MessageCircle,
-  UserCheck,Wrench,
+  UserCheck, Wrench,
   Box,
   HelpCircle,
   PlusCircle,
@@ -49,5 +49,6 @@ export const LucideIconCollection = {
   Package,
   ClipboardList,
   AlertTriangleIcon,
-  Printer
+  Printer,
+ 
 };

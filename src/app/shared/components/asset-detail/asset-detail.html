@@ -1,7 +1,5 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 sm:px-6 py-6">
-  <div
-    class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto space-y-6"
-  >
+  <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto space-y-6">
     <!-- Header -->
     <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
       <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
@@ -30,18 +28,21 @@
         <div><strong>RAM:</strong> {{ asset?.ram || '-' }}</div>
         <div><strong>Drive:</strong> {{ asset?.drive || '-' }}</div>
         <div><strong>Serial Number:</strong> {{ asset?.serialNumber || '-' }}</div>
-        <div><strong>Purchase Date:</strong> {{ asset?.purchaseDate ? (asset.purchaseDate | date:'mediumDate') : '-' }}</div>
+        <div><strong>Purchase Date:</strong> {{ asset?.purchaseDate ? (asset.purchaseDate | date:'mediumDate') : '-' }}
+        </div>
         <div class="sm:col-span-2"><strong>Peripherals:</strong> <br />{{ asset?.peripherals || '-' }}</div>
       </div>
     </section>
 
     <!-- History -->
+    @if (role=="admin") {
     <section class="border rounded-md p-4 shadow-sm">
       <h3 class="text-lg font-semibold text-indigo-700 flex items-center gap-2 mb-3">
         <lucide-icon [name]="LucideIcon.Clock" class="w-5 h-5" />
         History
       </h3>
-      <div *ngIf="asset?.history && asset.history.length; else noHistory" class="max-h-40 overflow-y-auto space-y-2 text-gray-700">
+      <div *ngIf="asset?.history && asset.history.length; else noHistory"
+        class="max-h-40 overflow-y-auto space-y-2 text-gray-700">
         <div *ngFor="let h of asset.history">
           <p class="whitespace-pre-line">{{ h.note }}</p>
           <small class="text-gray-500">{{ h.date | date:'mediumDate' }}</small>
@@ -52,25 +53,27 @@
         <p class="text-gray-400 italic">No history available.</p>
       </ng-template>
     </section>
-
+    }
     <!-- Software Installed -->
     <section class="border rounded-md p-4 shadow-sm">
       <h3 class="text-lg font-semibold text-indigo-700 flex items-center gap-2 mb-3">
         <lucide-icon [name]="LucideIcon.Box" class="w-5 h-5" />
         Software Installed
       </h3>
-      <div *ngIf="asset?.installedSoftware && asset.installedSoftware.length; else noSoftware" class="max-h-40 overflow-y-auto space-y-3 text-gray-700">
+      <div *ngIf="asset?.installedSoftware && asset.installedSoftware.length; else noSoftware"
+        class="max-h-40 overflow-y-auto space-y-3 text-gray-700">
         <div *ngFor="let s of asset.installedSoftware" class="border rounded p-3 bg-gray-50">
           <div class="flex justify-between items-center mb-1">
             <strong>{{ s.name || '-' }}</strong>
             <span class="text-sm italic text-gray-500">version {{ s.version || 'N/A' }}</span>
           </div>
+          @if (role=='admin') {
           <div class="text-sm">
             <p><strong>Purchased:</strong> {{ s.purchaseDate ? (s.purchaseDate | date:'mediumDate') : '-' }}</p>
             <p><strong>Expires:</strong> {{ s.expireDate ? (s.expireDate | date:'mediumDate') : '-' }}</p>
             <p><strong>License Key:</strong> {{ s.licenseKey || '-' }}</p>
             <p><strong>Notes:</strong> {{ s.notes || '-' }}</p>
-          </div>
+          </div>}
         </div>
       </div>
       <ng-template #noSoftware>

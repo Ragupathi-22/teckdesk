@@ -16,9 +16,9 @@ export const DEFAULT_COMPANY_DATA: Omit<Company, 'id'> = {
     { operatingSystem: 'Linux', isActive: true, sortOrder: 3, version: ["l1","l2"] }
   ],
   teams: [
-    { team: 'IT Support', isActive: true, sortOrder: 1 },
-    { team: 'HR', isActive: true, sortOrder: 2 },
-    { team: 'Operations', isActive: true, sortOrder: 3 }
+    {id:'', team: 'IT Support', isActive: true, sortOrder: 1 },
+    {id:'', team: 'HR', isActive: true, sortOrder: 2 },
+    {id:'', team: 'Operations', isActive: true, sortOrder: 3 }
   ],
   assetStatus: [
     { status: 'Available', color: '#16a34a', isActive: true, sortOrder: 1 },

@@ -1,0 +1,71 @@
+<div class="p-6">
+    <h2 class="text-xl font-bold mb-4">My Assigned Assets</h2>
+
+    <!-- Loader -->
+    <div *ngIf="loadingTable()" class="text-center py-4 text-indigo-600">Loading...</div>
+
+    <div *ngIf="!loadingTable()" class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asset</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tag</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operating System</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @for (asset of paginatedAssets(); track $index) {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ asset.name }}</div>
+                            <div class="text-sm text-gray-500">{{ asset.model }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ asset.tag }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ asset.os}}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {{ asset.purchaseDate ? (asset.purchaseDate | date: 'mediumDate') : '-' }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span
+                                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-500 text-white">
+                                {{ asset.status }}
+                            </span>
+                        </td>
+                        <td class="px-10 py-4 text-right text-sm font-medium">
+                            <button (click)="showDetails(asset)" class="text-blue-600 hover:text-blue-900"
+                                title="View Asset Details">
+                                <lucide-icon [name]="LucideIcon.Info" class="w-4 h-4"></lucide-icon>
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                    @if (paginatedAssets().length === 0) {
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-sm text-gray-500">
+                            No assets assigned to you.
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- All Loaded Indicator -->
+            <div *ngIf="paginatedAssets().length === assets().length" class="text-center py-4 text-green-600">
+                ✅ All assets loaded.
+            </div>
+        </div>
+    </div>
+
+    <!-- Load More -->
+    <div class="text-center mt-4" *ngIf="paginatedAssets().length < assets().length">
+        <button (click)="nextPage()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm rounded-md">Load
+            More</button>
+    </div>
+
+    <!-- Asset Detail Modal -->
+    <app-asset-detail *ngIf="showAssetDetail()" [asset]="showAssetDetail()" [onClose]="closeDetails.bind(this)" role="employee" ></app-asset-detail>
+</div>

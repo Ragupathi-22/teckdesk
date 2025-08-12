@@ -12,6 +12,6 @@ export const environment = {
     LiveSiteURLForEmployee: 'http://localhost/teckdesk/',
     // Base_API :"http://localhost/teckdesk/",
     Base_API :"https://cwpteam.ntplstaging.com/Ragu/teckdesk/",
-    API_URL :"http://cwptraining.ntplstaging.com/ragu/teckdesk",
+    API_URL :"https://cwptraining.ntplstaging.com/ragu/teckdesk",
     COMPANY_KEY :"companyId"
 };

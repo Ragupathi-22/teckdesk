@@ -11,7 +11,7 @@ import { LucideIconCollection } from '../../../shared/icons/lucide-icons';
 })
 export class AssetDetail {
   @Input() asset: any;
-@Input() onClose: () => void = () => {};
-
+  @Input() onClose: () => void = () => { };
+  @Input() role: 'employee' | 'admin' = 'employee';
   LucideIcon = LucideIconCollection;
 }
