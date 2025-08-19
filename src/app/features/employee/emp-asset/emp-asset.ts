@@ -53,6 +53,16 @@ export class EmpAsset implements OnInit {
     }
   }
 
+  getAssetStatusLabel(statusId: string): string {
+  return this.dataService.getAssetStatusByCompany()
+    .find(s => s.id === statusId)?.status || '';
+}
+
+getAssetStatusColor(statusId: string): string {
+  return this.dataService.getAssetStatusByCompany()
+    .find(s => s.id === statusId)?.color || '#6b7280';
+}
+
   get paginatedAssets() {
     return computed(() => {
       const start = 0;

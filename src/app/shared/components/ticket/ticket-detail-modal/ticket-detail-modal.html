@@ -10,16 +10,17 @@
         <p class="text-sm text-gray-500">{{ formattedTimestamp | date: 'medium' }}</p>
       </div>
       <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-        [ngStyle]="{ 'background-color': ticketStatusColor, 'color': 'white' }">
-        {{ ticket.status }}
+        [ngStyle]="{ 'background-color': getTicketStatusColor(ticket.status), 'color': 'white' }">
+        {{ getTicketStatusLabel(ticket.status) }}
       </span>
+
     </div>
 
     <!-- Ticket Info -->
     <div class="bg-gray-50 p-4 rounded-md mb-4">
       <div class="flex justify-between">
         <h4 class="font-medium text-gray-900">{{ ticket.title }}</h4>
-        <span class="text-sm text-gray-500">{{ ticket.category }}</span>
+        <span class="text-sm text-gray-500">{{ getTicketCategoryLabel(ticket.category) }}</span>
       </div>
       <p class="mt-2 text-gray-700 max-h-40 overflow-auto">{{ ticket.description }}</p>
       <div class="mt-3 text-sm text-gray-500">Raised by: {{ ticket.raisedByName }}</div>
@@ -41,7 +42,7 @@
       <label class="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
       <select [(ngModel)]="updatedStatus" class="w-full border border-gray-300 rounded-md shadow-sm p-2">
         <option value="">-- Select --</option>
-        <option *ngFor="let s of statusList" [value]="s.status">{{ s.status }}</option>
+        <option *ngFor="let s of statusList" [value]="s.id">{{ s.status }}</option>
       </select>
     </div>
 
@@ -93,8 +94,7 @@
             <!-- Bullet Icon -->
             <div
               class="absolute left-0 top-2 h-6 w-6 rounded-full  text-white flex items-center justify-center text-xs font-semibold"
-              [ngClass]="log.isAdmin ? 'bg-blue-500' : 'bg-gray-300' "
-              >
+              [ngClass]="log.isAdmin ? 'bg-blue-500' : 'bg-gray-300' ">
               {{ log.updatedByName[0] | uppercase}}
             </div>
 
@@ -104,7 +104,7 @@
               <p class="text-sm text-gray-700">
                 {{ i === 0 && log.updatedByName !== 'admin'
                 ? log.updatedByName + ' created the ticket'
-                : 'Status changed to ' + log.status }}
+                : 'Status changed to ' + getTicketStatusLabel(log.status)}}
               </p>
               <p class="text-xs text-gray-500">{{ log.timestamp?.toDate() | date: 'medium' }}</p>
             </div>

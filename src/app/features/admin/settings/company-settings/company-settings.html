@@ -125,7 +125,7 @@
         </div>
         <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('teams', { team: '', isActive: true, sortOrder: 1 })">
+          (click)="addItem('teams', { team: '', isActive: true, sortOrder: 1, id: '' })">>
           + Add Team
         </button>
       </div>
@@ -148,6 +148,7 @@
               <tr *ngFor="let a of editedCompany()?.assetStatus; let i = index" class="hover:bg-gray-50">
                 <td class="p-2">
                   <input
+                   [readOnly]="notAllowToDeleteAssetStatus(a)"
                     class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     [(ngModel)]="a.status" />
                 </td>
@@ -164,7 +165,7 @@
                     class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     [(ngModel)]="a.sortOrder" />
                 </td>
-                <td class="p-2 text-center">
+                <td class="p-2 text-center" *ngIf="!notAllowToDeleteAssetStatus(a)">
 
                   <lucide-icon [name]="LucideIcon.XCircle" (click)="removeItem('assetStatus', i)"
                     class="text-red-600 hover:text-red-800" />
@@ -176,7 +177,7 @@
         </div>
         <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('assetStatus', { status: '', color: '#000000', isActive: true, sortOrder: 1 })">
+          (click)="addItem('assetStatus', {id:'', status: '', color: '#000000', isActive: true, sortOrder: 1 })">
           + Add Asset Status
         </button>
       </div>
@@ -225,7 +226,7 @@
         </div>
         <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('ticketCategory', { category: '', isActive: true, sortOrder: 1 })">
+          (click)="addItem('ticketCategory', {id:'',category: '', isActive: true, sortOrder: 1 })">
           + Add Category
         </button>
       </div>
@@ -248,6 +249,7 @@
               <tr *ngFor="let s of editedCompany()?.ticketStatus; let i = index" class="hover:bg-gray-50">
                 <td class="p-2">
                   <input
+                  [readOnly]="notAllowToDeleteTicketStatus(s)"
                     class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     [(ngModel)]="s.status" />
                 </td>
@@ -264,7 +266,7 @@
                     class="w-16 rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     [(ngModel)]="s.sortOrder" />
                 </td>
-                <td class="p-2 text-center">
+                <td class="p-2 text-center" *ngIf="!notAllowToDeleteTicketStatus(s)">
                   <lucide-icon [name]="LucideIcon.XCircle" (click)="removeItem('ticketStatus', i)"
                     class="text-red-600 hover:text-red-800" />
 
@@ -275,7 +277,7 @@
         </div>
         <button type="button"
           class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow w-full sm:w-auto"
-          (click)="addItem('ticketStatus', { status: '', color: '#000000', isActive: true, sortOrder: 1 })">
+          (click)="addItem('ticketStatus', {id:'', status: '', color: '#000000', isActive: true, sortOrder: 1 })">
           + Add Ticket Status
         </button>
       </div>

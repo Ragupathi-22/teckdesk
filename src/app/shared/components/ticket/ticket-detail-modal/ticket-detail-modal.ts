@@ -7,15 +7,16 @@ import { LucideAngularModule } from 'lucide-angular';
 import { LucideIconCollection } from '../../../icons/lucide-icons';
 import { ToastService } from '../../../service/toast.service';
 import { ConfirmDialogService } from '../../../service/confirm-dialog.service';
+import { TicketStatus } from '../../../../core/models/company.models';
 
 @Component({
   selector: 'app-ticket-detail-modal',
   templateUrl: './ticket-detail-modal.html',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule,LucideAngularModule],
+  imports: [CommonModule, DatePipe, FormsModule, LucideAngularModule],
 })
 export class TicketDetailModal implements OnInit {
-  LucideIcons =LucideIconCollection;
+  LucideIcons = LucideIconCollection;
   @Input() ticket!: Ticket;
   @Input() isAdmin: boolean = false;
 
@@ -23,32 +24,29 @@ export class TicketDetailModal implements OnInit {
   @Output() statusChange = new EventEmitter<string>();
   @Output() addComment = new EventEmitter<string>();
   @Output() adminSave = new EventEmitter<{
-  ticketId: string;
-  raisedBy: string;
-  message: string;
-  updatedByName: string;
-  isAdmin: boolean;
-  newStatus?: string;
-}>();
+    ticketId: string;
+    raisedBy: string;
+    message: string;
+    updatedByName: string;
+    isAdmin: boolean;
+    newStatus?: string;
+  }>();
 
   activeTab: 'comments' | 'status' = 'status';
 
   private dataService = inject(DataService);
-  private toastr=inject(ToastService);
-  private confirmService =inject (ConfirmDialogService);
+  private toastr = inject(ToastService);
+  private confirmService = inject(ConfirmDialogService);
   newComment: string = '';
   updatedStatus: string = '';
   popupImage: string | null = null;
 
-  ticketStatusColor: string = '#ccc'; // default gray
-  statusList: { status: string; color: string }[] = [];
+ 
+  statusList: TicketStatus[] = [];
 
   ngOnInit(): void {
     // Get status color list
     this.statusList = this.dataService.getTicketStatus();
-
-    const statusEntry = this.statusList.find(s => s.status === this.ticket.status);
-    this.ticketStatusColor = statusEntry?.color || '#999';
   }
 
   get formattedTimestamp(): Date | null {
@@ -67,6 +65,19 @@ export class TicketDetailModal implements OnInit {
     return this.ticket?.photoUrls || [];
   }
 
+  getTicketStatusLabel(statusId: string): string {
+    return this.dataService.getTicketStatus().find(s => s.id === statusId)?.status || '';
+  }
+
+  getTicketStatusColor(statusId: string): string {
+    return this.dataService.getTicketStatus().find(s => s.id === statusId)?.color || '#999';
+  }
+
+  getTicketCategoryLabel(categoryId: string): string {
+    return this.dataService.getTicketCategory().find(c => c.id === categoryId)?.category || '';
+  }
+
+
 
 
   openImagePopup(url: string) {
@@ -81,63 +92,63 @@ export class TicketDetailModal implements OnInit {
     if (index === 0 && log.updatedByName != 'admin') {
       return `${log.updatedByName} created the ticket`;
     }
-    return `Status changed to ${log.status}`;
+    return `Status changed to ${this.getTicketStatusLabel(log.status)}`;
   }
 
-async onAdminSubmit() {
-  const trimmedComment = this.newComment.trim();
-  const hasStatusChange = !!this.updatedStatus;
-  const hasComment = !!trimmedComment;
+  async onAdminSubmit() {
+    const trimmedComment = this.newComment.trim();
+    const hasStatusChange = !!this.updatedStatus;
+    const hasComment = !!trimmedComment;
 
-  if (!hasStatusChange && !hasComment) {
-    this.toastr.error('Please update status or add a comment before saving.');
-    return;
+    if (!hasStatusChange && !hasComment) {
+      this.toastr.error('Please update status or add a comment before saving.');
+      return;
+    }
+
+    const confirmMsg = [
+      hasStatusChange ? `Change status to "${this.getTicketStatusLabel(this.updatedStatus)}"` : null,
+      hasComment ? 'Add comment' : null,
+    ]
+      .filter(Boolean)
+      .join(' and ');
+
+    const confirmed = await this.confirmService.show(
+      'Confirm Ticket Update',
+      `Are you sure you want to ${confirmMsg}?`,
+      'Yes, Update',
+      'Cancel'
+    );
+
+    if (!confirmed) return;
+
+    this.adminSave.emit({
+      ticketId: this.ticket.id,
+      raisedBy: this.ticket.raisedBy,
+      message: trimmedComment,
+      updatedByName: 'admin', // Replace with dynamic name if needed
+      isAdmin: true,
+      newStatus: hasStatusChange ? this.updatedStatus : undefined,
+    });
+
+    this.newComment = '';
+    this.updatedStatus = '';
   }
 
-  const confirmMsg = [
-    hasStatusChange ? `Change status to "${this.updatedStatus}"` : null,
-    hasComment ? 'Add comment' : null,
-  ]
-    .filter(Boolean)
-    .join(' and ');
 
- const confirmed = await this.confirmService.show(
-    'Confirm Ticket Update',
-    `Are you sure you want to ${confirmMsg}?`,
-    'Yes, Update',
-    'Cancel'
-  );
+  async onEmployeeComment() {
 
-  if (!confirmed) return;
+    const confirmed = await this.confirmService.show(
+      'Confirm Ticket Update',
+      `Are you sure you want to Add Comment?`,
+      'Yes',
+      'Cancel'
+    );
+    if (!confirmed) return;
 
-  this.adminSave.emit({
-    ticketId: this.ticket.id,
-    raisedBy :this.ticket.raisedBy,
-    message: trimmedComment,
-    updatedByName: 'admin', // Replace with dynamic name if needed
-    isAdmin: true,
-    newStatus: hasStatusChange ? this.updatedStatus : undefined,
-  });
-
-  this.newComment = '';
-  this.updatedStatus = '';
-}
-
-
-async onEmployeeComment() {
-
-   const confirmed = await this.confirmService.show(
-    'Confirm Ticket Update',
-    `Are you sure you want to Add Comment?`,
-    'Yes',
-    'Cancel'
-  );
-  if (!confirmed) return;
-
-  const trimmedComment = this.newComment.trim();
-  if (!trimmedComment) return;
-  this.addComment.emit(trimmedComment);
-  this.newComment = '';
-}
+    const trimmedComment = this.newComment.trim();
+    if (!trimmedComment) return;
+    this.addComment.emit(trimmedComment);
+    this.newComment = '';
+  }
 
 }

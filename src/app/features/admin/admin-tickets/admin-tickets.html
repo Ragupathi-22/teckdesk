@@ -21,7 +21,7 @@
             type="text"
             formControlName="search"
             placeholder="Search by id,title,desc,tag,assigned to..."
-            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-400"
           />
         </div>
 
@@ -34,7 +34,7 @@
           >
             <option value="">All Status</option>
             @for (status of ticketStatusColors; track $index) {
-            <option  [value]="status.status">
+            <option  [value]="status.id">
               {{ status.status }}
             </option>
           }
@@ -50,7 +50,7 @@
           >
             <option value="">All Categories</option>
             @for (category of categories(); track $index) {
-            <option  [value]="category.category">{{ category.category }}</option>
+            <option  [value]="category.id">{{ category.category }}</option>
           }
           </select>
         </div>
@@ -64,7 +64,7 @@
           >
             <option value="">All Teams</option>
             @for (team of teams(); track $index) {
-            <option  [value]="team.team">{{ team.team }}</option>
+            <option  [value]="team.id">{{ team.team }}</option>
             }
           </select>
         </div>

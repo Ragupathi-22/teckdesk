@@ -6,6 +6,7 @@ import { throwError } from 'rxjs';
 import { ToastService } from './toast.service';
 import { environment } from '../../../environment';
 import { Ticket } from '../../core/models/ticket.model';
+import { DataService } from '../../core/services/data.service';
 
 @Injectable({ providedIn: 'root' })
 export class MailService {
@@ -13,7 +14,8 @@ export class MailService {
 
   constructor(
     private http: HttpClient,
-    private toastr: ToastService
+    private toastr: ToastService,
+    private dataService :DataService
   ) {}
 
   sendMail(emails: string[], subject: string, body: string) {
@@ -31,9 +33,10 @@ export class MailService {
   }
 
   // ✅ New Function: Mail Ticket Info to Admins
-  mailToAdminsForTicketCreation(emails: string[],ticketId:string, ticket: Ticket) {
+   mailToAdminsForTicketCreation(emails: string[],ticketId:string, ticket: Ticket) {
     if (!emails.length) return;
 
+    const category = this.dataService.getTicketCategoryById(ticket.category);
     const subject = `New Ticket Created: ${ticket.title}`;
 
     const body = `
@@ -43,7 +46,7 @@ export class MailService {
         <p><strong>Raised By:</strong> ${ticket.raisedByName}</p>
         <p><strong>Title:</strong> ${ticket.title}</p>
         <p><strong>Description:</strong> ${ticket.description}</p>
-        <p><strong>Category:</strong> ${ticket.category}</p>
+        <p><strong>Category:</strong> ${category}</p>
         <p><strong>Asset Tag:</strong> ${ticket.assetTag}</p>
         <br>
         <hr>

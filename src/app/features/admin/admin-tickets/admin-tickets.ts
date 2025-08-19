@@ -188,11 +188,9 @@ export class AdminTickets implements OnInit, OnDestroy {
 
       this.selectedTicket.set({
         ...updated,
-        id: updated.id, // make sure it's present
-        statusColor: statusMeta?.color || 'gray',
+        id: updated.id, 
         team: team?.team,
-      } as Ticket); // 👈 forcefully assert the type to Ticket
-
+      } as Ticket); 
       // this.closeTicketDetail();
     } catch {
       this.toastr.error('Failed to add comment');

@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { DEFAULT_COMPANY_DATA } from '../../../../core/models/company-defaults';
-import { Company } from '../../../../core/models/company.models';
+import { AssetStatus, Company, TicketStatus } from '../../../../core/models/company.models';
 import { db } from '../../../../firebase.config';
 import { LoadingService } from '../../../../shared/service/loading.service';
 import { ConfirmDialogService } from '../../../../shared/service/confirm-dialog.service';
@@ -11,6 +11,7 @@ import { ToastService } from '../../../../shared/service/toast.service';
 import { LucideIconCollection } from '../../../../shared/icons/lucide-icons';
 import { LucideAngularModule } from 'lucide-angular';
 import { LookupService } from '../../../../core/services/company.service';
+import { DataService } from '../../../../core/services/data.service';
 
 @Component({
   selector: 'app-company-settings',
@@ -25,6 +26,9 @@ export class CompanySettings implements OnInit {
   editedCompany = signal<Company | null>(null);
   newCompany = signal<boolean>(false);
   LucideIcon = LucideIconCollection;
+  private dataService = inject(DataService);
+
+
   constructor(
     private lookup: LookupService,
     private loading: LoadingService,
@@ -71,13 +75,37 @@ export class CompanySettings implements OnInit {
     this.selectedCompanyId.set(null);
   }
 
+  /** Generate unique ID */
+private genId(): string {
+  // Check if crypto.randomUUID exists
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+  // Fallback: RFC4122 version 4 UUID (not cryptographically secure, but fine for most use cases)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
-  addItem<T>(arrKey: keyof Company, emptyItem: T) {
+
+  /** Add item to array with unique id */
+  addItem<K extends keyof Company>(
+    arrKey: K,
+    emptyItem: Company[K] extends (infer U)[] ? U : never
+  ) {
     const company = this.editedCompany();
     if (!company) return;
-    (company[arrKey] as T[]).push(JSON.parse(JSON.stringify(emptyItem)));
+
+    const newItem = JSON.parse(JSON.stringify(emptyItem));
+    if (!newItem.id) {
+      newItem.id = this.genId();
+    }
+    (company[arrKey] as any[]).push(newItem);
     this.editedCompany.set({ ...company });
   }
+
 
   removeItem(arrKey: keyof Company, index: number) {
     const company = this.editedCompany();
@@ -86,8 +114,7 @@ export class CompanySettings implements OnInit {
     this.editedCompany.set({ ...company });
   }
 
-  // company-settings.ts
-
+  // String array (ramOptions, driveOptions)
   addStringItem(arrKey: 'ramOptions' | 'driveOptions', value: string = '') {
     const company = this.editedCompany();
     if (!company) return;
@@ -106,6 +133,7 @@ export class CompanySettings implements OnInit {
     const company = this.editedCompany();
     if (!company) return;
     company.operatingSystems.push({
+      id: this.genId(),
       operatingSystem: '',
       isActive: true,
       sortOrder: company.operatingSystems.length + 1,
@@ -138,7 +166,6 @@ export class CompanySettings implements OnInit {
   trackByIndex(index: number): number {
     return index;
   }
-
 
   async saveChanges() {
     const company = this.editedCompany();
@@ -176,18 +203,16 @@ export class CompanySettings implements OnInit {
     }
   }
 
-
   async cancelChanges() {
     this.newCompany.set(false);
     this.editedCompany.set(null);
     this.selectedCompanyId.set(null);
 
-    // ✅ Refresh the company list so dropdown is updated immediately
+    // ✅ Refresh
     await this.lookup.init();
     this.lookup.getAllCompanies().then((companies) => {
       this.companies.set(companies);
     });
-
   }
 
   async deleteCompany(id: string) {
@@ -210,6 +235,7 @@ export class CompanySettings implements OnInit {
     try {
       await deleteDoc(doc(db, 'companies', id));
       this.toaster.success('Company deleted successfully');
+      window.location.reload();
     } catch (error) {
       console.error('Error deleting company:', error);
       this.toaster.error('Failed to delete company');
@@ -218,9 +244,17 @@ export class CompanySettings implements OnInit {
       this.loading.hide();
       this.cancelChanges();
     }
-
   }
 
+
+notAllowToDeleteTicketStatus(status: TicketStatus): boolean {
+  return status?.systemKey === 'OPEN';
+}
+
+notAllowToDeleteAssetStatus(status: AssetStatus): boolean {
+  const protectedKeys = ['ASSIGNED', 'IN_STOCK', 'UNDER_REPAIR'];
+  return status.systemKey !== undefined && protectedKeys.includes(status.systemKey);
+}
 
 
 }

@@ -47,14 +47,11 @@ async loadTickets() {
     }
 
     const myTickets = await this.ticketService.getTicketsByEmployee(currentUser.id);
-    const ticketStatuses = this.dataService.getTicketStatus();
 
     // Replace IDs with names, add status color
     const enriched = myTickets.map(ticket => {
-      const statusMeta = ticketStatuses.find(s => s.status === ticket.status);
       return {
         ...ticket,
-        statusColor: statusMeta?.color || 'gray',
       };
     });
 

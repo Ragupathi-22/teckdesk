@@ -45,6 +45,12 @@ export class EmployeeDashboard implements OnInit {
     this.loadDashboardData(currentUser.uid);
   }
 
+  getTeamName(teamId?: string): string {
+  if (!teamId) return '';
+  return this.dataService.getTeamByTeamId(teamId);
+}
+
+
   getStatConfig(title: string, value: number, status: keyof typeof STATUS_ICON_MAP) {
     const iconInfo = this.STATUS_ICON_MAP[status] || {
       icon: LucideIconCollection.HelpCircle,

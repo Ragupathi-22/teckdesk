@@ -53,6 +53,56 @@ export class DataService {
     return id ? this.lookup.getTeamsByCompany(id) : [];
   }
 
+// Team lookup (already exists)
+getTeamByTeamId(teamId?: string): string {
+  const company = this.getCompany();
+  const team = company?.teams.find(t => t.id === teamId)?.team;
+  return team ? team : '';
+}
+
+// Asset Status lookup
+getAssetStatusById(statusId: string): string {
+  const company = this.getCompany();
+  const status = company?.assetStatus.find(s => s.id === statusId)?.status;
+  return status ? status : '';
+}
+
+// Ticket Category lookup
+getTicketCategoryById(categoryId: string): string {
+  const company = this.getCompany();
+  const category = company?.ticketCategory.find(c => c.id === categoryId)?.category;
+  return category ? category : '';
+}
+
+// Ticket Status lookup
+getTicketStatusById(statusId: string): string {
+  const company = this.getCompany();
+  const status = company?.ticketStatus.find(s => s.id === statusId)?.status;
+  return status ? status : '';
+}
+
+// Operating System lookup
+getOperatingSystemById(osId: string): string {
+  const company = this.getCompany();
+  const os = company?.operatingSystems.find(o => o.id === osId)?.operatingSystem;
+  return os ? os : '';
+}
+
+// (Optional) Get color of Asset Status by ID
+getAssetStatusColorById(statusId: string): string {
+  const company = this.getCompany();
+  const color = company?.assetStatus.find(s => s.id === statusId)?.color;
+  return color ? color : '#9CA3AF'; // default grey if not found
+}
+
+// (Optional) Get color of Ticket Status by ID
+getTicketStatusColorById(statusId: string): string {
+  const company = this.getCompany();
+  const color = company?.ticketStatus.find(s => s.id === statusId)?.color;
+  return color ? color : '#9CA3AF';
+}
+
+
   getAssetStatusByCompany(): AssetStatus[] {
     const id = this.getCompanyId();
     return id ? this.lookup.getAssetStatusByCompany(id) : [];
@@ -68,21 +118,6 @@ export class DataService {
     return id ? this.lookup.getTicketCategoryByCompany(id) : [];
   }
 
-  getOperatingSystems(): string[] {
-    const id = this.getCompanyId();
-    const company = id ? this.lookup.getCompanyById(id) : undefined;
-    return company ? company.operatingSystems.map(os => os.operatingSystem) : [];
-  }
-  getRamOptions(): string[] {
-    const id = this.getCompanyId();
-    const company = id ? this.lookup.getCompanyById(id) : undefined;
-    return company ? company.ramOptions : [];
-  } 
-  getDriveOptions(): string[] {
-    const id = this.getCompanyId();
-    const company = id ? this.lookup.getCompanyById(id) : undefined;
-    return company ? company.driveOptions : [];
-  }
 
 
   // ✅ New employee-related methods

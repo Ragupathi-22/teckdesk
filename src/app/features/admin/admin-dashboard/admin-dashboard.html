@@ -106,7 +106,7 @@
               'background-color': getAssetStatusColor(asset.status),
               'color': 'white'
             }">
-            {{ asset.status }}
+            {{ getAssetStatusLabel(asset.status) }}
           </span>
         </li>
         }
@@ -133,7 +133,7 @@
               'background-color': getTicketStatusColor(ticket.status),
               'color': 'white'
             }">
-            {{ ticket.status }}
+          {{ getTicketStatusLabel(ticket.status) }}
           </span>
 
           <!-- Date -->

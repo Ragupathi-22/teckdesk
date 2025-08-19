@@ -32,7 +32,7 @@ export class TicketService {
   public tickets$ = this.ticketsSubject.asObservable();
   private unsubscribe: Unsubscribe | null = null;
   private toastr = inject(ToastService);
-  private dataService =inject(DataService);
+  private dataService = inject(DataService);
 
   // Create a new ticket
   async createTicket(ticket: Omit<Ticket, 'id' | 'timestamp'>): Promise<string> {
@@ -40,15 +40,19 @@ export class TicketService {
     this.loadingService.show();
 
     try {
+      // ✅ Get 'Open' status ID dynamically
+      const openStatusId = this.dataService.getTicketStatus()
+        .find(s => s.status.toLowerCase() === 'open')?.id || '';
+
       const docRef = await addDoc(ticketsRef, {
         ...ticket,
+        status: openStatusId, // store ID, not label
         timestamp: serverTimestamp(),
       });
 
-      await this.addStatusLog(docRef.id, 'Open', ticket.raisedByName, false);
+      await this.addStatusLog(docRef.id, openStatusId, ticket.raisedByName, false);
 
       const adminEmails = await this.getAdminEmails();
-
       if (adminEmails.length > 0) {
         this.mailService.mailToAdminsForTicketCreation(adminEmails, docRef.id, {
           ...ticket,
@@ -62,7 +66,6 @@ export class TicketService {
             console.error('Mail error:', err);
           }
         });
-
       } else {
         console.log('✅ Ticket created. No admin emails configured — skipping email.');
       }
@@ -76,93 +79,66 @@ export class TicketService {
     }
   }
 
-
-
   async getAdminEmails(): Promise<string[]> {
     try {
       const mailRef = collection(db, 'admin');
-      const q = query(mailRef, 
+      const q = query(
+        mailRef,
         where('isActive', '==', true),
         where('mailFromEmployee', '==', true)
       );
       const snapshot = await getDocs(q);
-      const emails = snapshot.docs
+      return snapshot.docs
         .map(doc => doc.data()?.['email'])
         .filter(email => typeof email === 'string');
-      return emails;
     } catch (error) {
       console.error('Failed to fetch admin emails:', error);
       return [];
     }
   }
 
-
-  // Get tickets by employee (for employee dashboard)
   async getTicketsByEmployee(employeeId: string): Promise<Ticket[]> {
     const ticketsRef = collection(db, 'tickets');
-    const q = query(
-      ticketsRef,
-      where('raisedBy', '==', employeeId)
-    );
-
+    const q = query(ticketsRef, where('raisedBy', '==', employeeId));
     const querySnapshot = await getDocs(q);
-    const tickets = querySnapshot.docs.map((docSnap) => ({
+    const tickets = querySnapshot.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data(),
     })) as Ticket[];
-
-    // Sort in memory to avoid composite index requirement
-    return tickets.sort((a, b) => {
-      const aTime = a.timestamp?.toDate?.() || new Date(0);
-      const bTime = b.timestamp?.toDate?.() || new Date(0);
-      return bTime.getTime() - aTime.getTime();
-    });
+    return tickets.sort((a, b) =>
+      (b.timestamp?.toDate?.() || new Date(0)).getTime() -
+      (a.timestamp?.toDate?.() || new Date(0)).getTime()
+    );
   }
 
-  // Get all tickets for admin (with filtering)
   async getTicketsForAdmin(companyId: string, filters?: TicketFilter): Promise<Ticket[]> {
     const ticketsRef = collection(db, 'tickets');
-    let q = query(
-      ticketsRef,
-      where('company', '==', companyId)
-    );
-
+    let q = query(ticketsRef, where('company', '==', companyId));
     const querySnapshot = await getDocs(q);
-    let tickets = querySnapshot.docs.map((docSnap) => ({
+
+    let tickets = querySnapshot.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data(),
     })) as Ticket[];
 
-    // Sort in memory to avoid composite index requirement
-    tickets = tickets.sort((a, b) => {
-      const aTime = a.timestamp?.toDate?.() || new Date(0);
-      const bTime = b.timestamp?.toDate?.() || new Date(0);
-      return bTime.getTime() - aTime.getTime();
-    });
+    tickets = tickets.sort((a, b) =>
+      (b.timestamp?.toDate?.() || new Date(0)).getTime() -
+      (a.timestamp?.toDate?.() || new Date(0)).getTime()
+    );
 
-    // Apply filters in memory to avoid complex queries
     if (filters) {
-      if (filters.status) {
-        tickets = tickets.filter(t => t.status === filters.status);
-      }
-      if (filters.category) {
-        tickets = tickets.filter(t => t.category === filters.category);
-      }
-      if (filters.employee) {
-        tickets = tickets.filter(t => t.raisedBy === filters.employee);
-      }
+      if (filters.status) tickets = tickets.filter(t => t.status === filters.status);
+      if (filters.category) tickets = tickets.filter(t => t.category === filters.category);
+      if (filters.employee) tickets = tickets.filter(t => t.raisedBy === filters.employee);
     }
-
     return tickets;
   }
 
-  // Get a single ticket by ID
   async getTicketById(ticketId: string): Promise<Ticket | null> {
     try {
       const ticketsRef = collection(db, 'tickets');
       const q = query(ticketsRef, where('__name__', '==', ticketId));
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.docs.length > 0) {
         const docSnap = querySnapshot.docs[0];
         return { id: docSnap.id, ...docSnap.data() } as Ticket;
@@ -174,60 +150,30 @@ export class TicketService {
     }
   }
 
-
-  // Add status log
-  async addStatusLog(
-    ticketId: string,
-    status: string,
-    updatedByName: string,
-    isAdmin: boolean
-
-  ): Promise<void> {
-
+  async addStatusLog(ticketId: string, statusId: string, updatedByName: string, isAdmin: boolean): Promise<void> {
     try {
       const ticketRef = doc(db, 'tickets', ticketId);
 
-      const tempDocRef = await addDoc(collection(db, '_temp'), {
-        temp: true,
-        timestamp: serverTimestamp(),
-      });
-
+      const tempDocRef = await addDoc(collection(db, '_temp'), { temp: true, timestamp: serverTimestamp() });
       const tempSnap = await getDoc(tempDocRef);
-      if (!tempSnap.exists()) {
-        console.error('Temp doc creation failed');
-        return;
-      }
+      if (!tempSnap.exists()) return;
 
       const generatedTimestamp = tempSnap.data()?.['timestamp'];
-      if (!generatedTimestamp) {
-        console.error('Timestamp not found in temp doc:', tempSnap.data());
-        return;
-      }
       await deleteDoc(tempDocRef);
-      const newLog = {
-        status,
-        updatedByName,
-        timestamp: generatedTimestamp,
-        isAdmin
-      };
+
+      const newLog: TicketStatusLog = { status: statusId, updatedByName, timestamp: generatedTimestamp, isAdmin };
 
       const ticketSnap = await getDoc(ticketRef);
-      if (!ticketSnap.exists()) {
-        console.error('Ticket not found with ID:', ticketId);
-        return;
-      }
+      if (!ticketSnap.exists()) return;
 
-      const existingData = ticketSnap.data();
-      const currentLogs = (existingData?.['statusLogs'] || []) as TicketStatusLog[];
-
+      const currentLogs = (ticketSnap.data()?.['statusLogs'] || []) as TicketStatusLog[];
       const updatedLogs = [...currentLogs, newLog].sort((a, b) =>
         (a.timestamp?.toMillis?.() ?? 0) - (b.timestamp?.toMillis?.() ?? 0)
       );
 
       await updateDoc(ticketRef, { statusLogs: updatedLogs });
-
     } catch (error: any) {
-      console.error('🔥 Firestore error in StatusLog:', error.message || error);
+      console.error('Firestore error in StatusLog:', error.message || error);
     }
   }
 
@@ -237,24 +183,19 @@ export class TicketService {
     message: string,
     updatedByName: string,
     isAdmin: boolean,
-    newStatus?: string 
+    newStatusId?: string
   ): Promise<void> {
+
     const ticketRef = doc(db, 'tickets', ticketId);
     this.loadingService.show();
 
     try {
       const ticketSnap = await getDoc(ticketRef);
       if (!ticketSnap.exists()) throw new Error('Ticket not found');
-
       const ticket = ticketSnap.data() as Ticket;
 
-      const tempDocRef = await addDoc(collection(db, '_temp'), {
-        temp: true,
-        timestamp: serverTimestamp(),
-      });
-
+      const tempDocRef = await addDoc(collection(db, '_temp'), { temp: true, timestamp: serverTimestamp() });
       const tempSnap = await getDoc(tempDocRef);
-      if (!tempSnap.exists()) throw new Error('Failed to create timestamp');
       const generatedTimestamp = tempSnap.data()?.['timestamp'];
       await deleteDoc(tempDocRef);
 
@@ -262,7 +203,7 @@ export class TicketService {
       let didAddComment = false;
       let didChangeStatus = false;
 
-      // Add comment if message exists
+      // Add comment
       if (message?.trim()) {
         const comment: TicketComment = {
           message: message.trim(),
@@ -275,32 +216,29 @@ export class TicketService {
         didAddComment = true;
       }
 
-      // Add status log if admin and newStatus provided and it's different
-      if (isAdmin && newStatus && newStatus !== ticket.status) {
+      // Change status if admin
+      if (isAdmin && newStatusId && newStatusId !== ticket.status) {
         const statusLog: TicketStatusLog = {
-          status: newStatus,
+          status: newStatusId,
           timestamp: generatedTimestamp,
           updatedByName,
           isAdmin,
         };
         const currentLogs = ticket.statusLogs || [];
         updates.statusLogs = [...currentLogs, statusLog];
-        updates.status = newStatus;
+        updates.status = newStatusId;
         didChangeStatus = true;
       }
 
-      // Edge case: admin tried changing to same status
-      if (isAdmin && newStatus && newStatus === ticket.status && !didAddComment) {
+      if (isAdmin && newStatusId && newStatusId === ticket.status && !didAddComment) {
         this.toastr.error('Status is already the same. No changes made.');
         return;
       }
 
-      // Update Firestore only if any update present
       if (didAddComment || didChangeStatus) {
         await updateDoc(ticketRef, updates);
       }
 
-      // ✅ Success Toaster
       if (isAdmin) {
         if (didAddComment && didChangeStatus) {
           this.toastr.success('Comment added and status updated');
@@ -313,19 +251,21 @@ export class TicketService {
         this.toastr.success('Comment added');
       }
 
-      //sent mail to employee
+      // Notify employee if needed
       const mailPermission = (await this.dataService.getCompany())?.sentMailToEmpTicketUpdate;
       if (mailPermission && isAdmin) {
+        const employee = await this.dataService.getEmployeeById(raisedBy);
+        if (!employee?.email) return;
+         const statusLabel = this.dataService.getTicketStatus()
+  .find(s => s.id === (didChangeStatus ? newStatusId! : ticket.status))
+  ?.status || '';
 
-        const employee =await this.dataService.getEmployeeById(raisedBy);
-
-        if(!employee?.email) return;
         this.mailService.mailToEmployeeForTicketUpdate(
-          employee?.email,
+          employee.email,
           ticketId,
           {
             title: ticket.title,
-            status: didChangeStatus ? newStatus : ticket.status,
+            status: statusLabel,
             comment: didAddComment ? message.trim() : undefined,
           }
         )?.subscribe({
@@ -336,9 +276,7 @@ export class TicketService {
             console.error('Mail error:', err);
           }
         });
-
       }
-
 
     } catch (error) {
       console.error('Error in addCommentAndMaybeUpdateStatus:', error);
@@ -349,26 +287,16 @@ export class TicketService {
     }
   }
 
-
-  // Delete ticket (admin only)
   async deleteTicket(ticketId: string): Promise<void> {
     const ticketRef = doc(db, 'tickets', ticketId);
     await deleteDoc(ticketRef);
   }
 
-
-
-  // Real-time ticket updates for admin dashboard
   subscribeToTickets(companyId: string, filters?: TicketFilter): void {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-    }
+    if (this.unsubscribe) this.unsubscribe();
 
     const ticketsRef = collection(db, 'tickets');
-    const q = query(
-      ticketsRef,
-      where('company', '==', companyId)
-    );
+    const q = query(ticketsRef, where('company', '==', companyId));
 
     this.unsubscribe = onSnapshot(q, (snapshot) => {
       const tickets = snapshot.docs.map((docSnap) => ({
@@ -376,12 +304,10 @@ export class TicketService {
         ...docSnap.data(),
       })) as Ticket[];
 
-      // Sort in memory
-      const sortedTickets = tickets.sort((a, b) => {
-        const aTime = a.timestamp?.toDate?.() || new Date(0);
-        const bTime = b.timestamp?.toDate?.() || new Date(0);
-        return bTime.getTime() - aTime.getTime();
-      });
+      const sortedTickets = tickets.sort((a, b) =>
+        (b.timestamp?.toDate?.() || new Date(0)).getTime() -
+        (a.timestamp?.toDate?.() || new Date(0)).getTime()
+      );
 
       this.ticketsSubject.next(sortedTickets);
     }, (error) => {
@@ -390,7 +316,6 @@ export class TicketService {
     });
   }
 
-  // Unsubscribe from real-time updates
   unsubscribeFromTickets(): void {
     if (this.unsubscribe) {
       this.unsubscribe();
@@ -398,22 +323,18 @@ export class TicketService {
     }
   }
 
-async getTicketStats(companyId: string): Promise<Record<string, number>> {
-  try {
-    const tickets = await this.getTicketsForAdmin(companyId);
-
-    // Dynamically count tickets by status
-    const stats: Record<string, number> = { total: tickets.length };
-
-    for (const ticket of tickets) {
-      const status = ticket.status || 'Unknown';
-      stats[status] = (stats[status] || 0) + 1;
+  async getTicketStats(companyId: string): Promise<Record<string, number>> {
+    try {
+      const tickets = await this.getTicketsForAdmin(companyId);
+      const stats: Record<string, number> = { total: tickets.length };
+      for (const ticket of tickets) {
+        const statusId = ticket.status || 'Unknown';
+        stats[statusId] = (stats[statusId] || 0) + 1;
+      }
+      return stats;
+    } catch (error) {
+      console.error('Error getting dynamic ticket stats:', error);
+      return { total: 0 };
     }
-
-    return stats;
-  } catch (error) {
-    console.error('Error getting dynamic ticket stats:', error);
-    return { total: 0 };
   }
-}
 }

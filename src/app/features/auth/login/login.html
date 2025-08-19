@@ -16,7 +16,7 @@
             </div>
             <input type="email" formControlName="email" placeholder="your@email.com"
               [class.border-red-500]="form.get('email')?.touched && form.get('email')?.invalid"
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+              class="block placeholder-gray-400 w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
         </div>
 
@@ -32,7 +32,7 @@
             <!-- Password Input -->
             <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••"
               [class.border-red-500]="form.get('password')?.touched && form.get('password')?.invalid"
-              class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+              class="placeholder-gray-400 block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
 
             <!-- Eye Icon -->
             <button type="button" (click)="showPassword = !showPassword"

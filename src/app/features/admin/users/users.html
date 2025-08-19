@@ -38,7 +38,7 @@
           <lucide-icon [name]="LucideIcon.Search" class="text-gray-400 w-4 h-4"></lucide-icon>
         </div>
         <input type="text" [formControl]="searchControl" placeholder="Search by name,email..."
-          class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-400" />
       </div>
 
       <div class="flex items-center space-x-2 relative w-40">
@@ -47,7 +47,7 @@
           class="block w-full appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
           <option value="All" class="border-b border-gray-200 py-1">All Teams</option>
           @for (team of filteredTeams; track $index) {
-          <option [value]="team.team" class="border-b border-gray-200 py-1">
+          <option [value]="team.id" class="border-b border-gray-200 py-1">
             {{ team.team }}
           </option>
           }
@@ -94,7 +94,7 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ user.name }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.email }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ this.selectedCompany?.code }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.team }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ getTeamById(user?.team) }}</td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span
                 class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -170,7 +170,7 @@
             [class.border-red-500]="userForm.get('team')?.touched && userForm.get('team')?.invalid"
             class="w-full border border-gray-300 rounded-md shadow-sm p-2">
               @for (team of filteredTeams; track $index) {
-              <option [value]="team.team">{{ team.team }}</option>
+              <option [value]="team.id">{{ team.team }}</option>
               }
             </select>
           </div>

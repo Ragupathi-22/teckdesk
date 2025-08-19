@@ -21,12 +21,9 @@
       <tr *ngIf="loading">
         <td [attr.colspan]="isAdmin ? 9 : 8" class="py-6 text-center">
           <div class="flex justify-center items-center space-x-2 text-indigo-600">
-            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10"
-                stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
             <span>Loading tickets...</span>
           </div>
@@ -39,20 +36,21 @@
         <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ ticket.raisedByName || ticket.raisedBy }}</td>
         <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ ticket.assetTag }}</td>
         <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">{{ ticket.title }}</td>
-        <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ ticket.category }}</td>
+        <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500"> {{ getTicketCategoryLabel(ticket.category) }}
+        </td>
         <td *ngIf="isAdmin" class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
-          {{ ticket.team || '-' }}
+          {{ getTeamLabel(ticket.team) }}
         </td>
         <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
           {{ formatDate(ticket.timestamp) }}
 
-        </td>
-                <td class="px-5 py-4 whitespace-nowrap">
+        <td class="px-5 py-4 whitespace-nowrap">
           <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-            [ngStyle]="{ 'background-color': ticket.statusColor || 'gray', 'color': 'white' }">
-            {{ ticket.status }}
+            [ngStyle]="{ 'background-color': getTicketStatusColor(ticket.status), 'color': 'white' }">
+            {{ getTicketStatusLabel(ticket.status) }}
           </span>
         </td>
+
 
         <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
           <!-- Action for Employee -->
@@ -64,7 +62,8 @@
 
           <!-- Actions for Admin -->
           <ng-container *ngIf="isAdmin">
-            <button (click)="viewDetail.emit(ticket)" class="text-indigo-600 hover:text-indigo-800" title="Update Status & Comments">
+            <button (click)="viewDetail.emit(ticket)" class="text-indigo-600 hover:text-indigo-800"
+              title="Update Status & Comments">
               <lucide-icon [name]="LucideIcon.MessageSquare" class="w-4 h-4" />
             </button>
             <button (click)="deleteTicket.emit(ticket)" class="text-red-600 hover:text-red-800" title="Delete Ticket">

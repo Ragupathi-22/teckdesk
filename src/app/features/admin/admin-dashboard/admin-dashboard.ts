@@ -18,7 +18,7 @@ import { LoadingService } from '../../../shared/service/loading.service';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, StatCard, FormsModule,AdminRegister],
+  imports: [CommonModule, StatCard, FormsModule, AdminRegister],
   templateUrl: './admin-dashboard.html',
 })
 export class AdminDashboard implements OnInit, OnDestroy {
@@ -42,7 +42,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
   recentTickets: Ticket[] = [];
   recentAssets: AssetModel[] = [];
   assetStatusColor: AssetStatus[] = [];
-  ticketStatusColor :TicketStatus[]=[];
+  ticketStatusColor: TicketStatus[] = [];
   STATUS_ICON_MAP = STATUS_ICON_MAP;
   showAddAdminModal = false;
 
@@ -53,11 +53,11 @@ export class AdminDashboard implements OnInit, OnDestroy {
     private dataService: DataService,
     private ticketService: TicketService,
     private assetService: AssetService,
-    private loadingService :LoadingService
+    private loadingService: LoadingService
   ) { }
 
   async ngOnInit(): Promise<void> {
-     this.loadingService.show();
+    this.loadingService.show();
     this.assetStatusColor = this.dataService.getAssetStatusByCompany();
     this.ticketStatusColor = this.dataService.getTicketStatus();
 
@@ -67,19 +67,18 @@ export class AdminDashboard implements OnInit, OnDestroy {
       .map(c => ({ id: c.id, name: c.name, sortOrder: c.sortOrder }));
 
     this.selectedCompanyId = this.auth.getCompanyId();
-    if (!this.selectedCompanyId) 
-      {
-        this.loadingService.hide();
-        return;
-      }
+    if (!this.selectedCompanyId) {
+      this.loadingService.hide();
+      return;
+    }
     // Subscribe to real-time ticket updates
     this.ticketService.subscribeToTickets(this.selectedCompanyId);
     this.ticketService.tickets$.subscribe((tickets: Ticket[]) => {
       const today = new Date().toDateString();
       this.ticketStats.set({
-        open: tickets.filter(t => t.status === 'Open').length,
-        inProgress: tickets.filter(t => t.status === 'In Progress').length,
-        resolved: tickets.filter(t => t.status === 'Resolved').length,
+        open: tickets.filter(t => this.getTicketStatusLabel(t.status) === 'Open').length,
+        inProgress: tickets.filter(t => this.getTicketStatusLabel(t.status) === 'In Progress').length,
+        resolved: tickets.filter(t => this.getTicketStatusLabel(t.status) === 'Resolved').length,
         newToday: tickets.filter(t => t.timestamp?.toDate?.().toDateString() === today).length,
       });
 
@@ -94,9 +93,9 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.assetService.assets$.subscribe((assets: AssetModel[]) => {
       this.assetStats.set({
         total: assets.length,
-        assigned: assets.filter(a => a.status === 'Assigned').length,
-        inStock: assets.filter(a => a.status === 'In Stock').length,
-        underRepair: assets.filter(a => a.status === 'Under Repair').length,
+        assigned: assets.filter(a =>this.getAssetStatusLabel(a.status)  === 'Assigned').length,
+        inStock: assets.filter(a => this.getAssetStatusLabel(a.status) === 'In Stock').length,
+        underRepair: assets.filter(a => this.getAssetStatusLabel(a.status) === 'Under Repair').length,
       });
 
       // 🔹 Save the latest 5 assets for recent list
@@ -110,7 +109,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
   async onSwitchCompany(event: Event) {
     const target = event.target as HTMLSelectElement;
     const companyId = target.value;
-    
+
     if (!companyId || companyId === this.selectedCompanyId) return;
     this.loadingService.show();
     await this.auth.setAdminCompany(companyId);
@@ -135,13 +134,22 @@ export class AdminDashboard implements OnInit, OnDestroy {
   }
 
   getAssetStatusColor(statusName: string): string {
-    const found = this.assetStatusColor.find(s => s.status === statusName);
+    const found = this.assetStatusColor.find(s => s.id === statusName);
     return found ? found.color : '#6b7280'; // default gray if not found
   }
-  getTicketStatusColor(statusName : string):string{
-    const found = this.ticketStatusColor.find(s => s.status === statusName);
-    return found ? found.color : '#6b7280'; // default gray if not found
+  getAssetStatusLabel(statusId: string): string {
+    return this.assetStatusColor.find(s => s.id === statusId)?.status || '';
   }
+
+  getTicketStatusColor(statusId: string): string {
+    return this.ticketStatusColor.find(s => s.id === statusId)?.color || '#6b7280';
+  }
+
+  getTicketStatusLabel(statusId: string): string {
+    return this.ticketStatusColor.find(s => s.id === statusId)?.status || '';
+  }
+
+
 
 
   private resubscribeToData(companyId: string) {
@@ -152,9 +160,9 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.ticketService.tickets$.subscribe((tickets: Ticket[]) => {
       const today = new Date().toDateString();
       this.ticketStats.set({
-        open: tickets.filter(t => t.status === 'Open').length,
-        inProgress: tickets.filter(t => t.status === 'In Progress').length,
-        resolved: tickets.filter(t => t.status === 'Resolved').length,
+        open: tickets.filter(t =>this.getTicketStatusLabel(t.status) === 'Open').length,
+        inProgress: tickets.filter(t => this.getTicketStatusLabel(t.status) === 'In Progress').length,
+        resolved: tickets.filter(t =>this.getTicketStatusLabel(t.status) === 'Resolved').length,
         newToday: tickets.filter(t => t.timestamp?.toDate?.().toDateString() === today).length,
       });
 
@@ -168,9 +176,9 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.assetService.assets$.subscribe((assets: AssetModel[]) => {
       this.assetStats.set({
         total: assets.length,
-        assigned: assets.filter(a => a.status === 'Assigned').length,
-        inStock: assets.filter(a => a.status === 'In Stock').length,
-        underRepair: assets.filter(a => a.status === 'Under Repair').length,
+        assigned: assets.filter(a => this.getAssetStatusLabel(a.status) === 'Assigned').length,
+        inStock: assets.filter(a =>this.getAssetStatusLabel(a.status) === 'In Stock').length,
+        underRepair: assets.filter(a =>this.getAssetStatusLabel(a.status)  === 'Under Repair').length,
       });
 
       // 🔹 Update recent assets

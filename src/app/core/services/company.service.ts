@@ -76,8 +76,8 @@ export class LookupService {
           isActive: data.isActive,
           sortOrder: data.sortOrder,
           empPass: data.empPass,
-          sentMailToEmpTicketUpdate : data.sentMailToEmpTicketUpdate || false,
-          sentMailToEmpRegister : data.sentMailToEmpRegister || false,
+          sentMailToEmpTicketUpdate: data.sentMailToEmpTicketUpdate || false,
+          sentMailToEmpRegister: data.sentMailToEmpRegister || false,
           ramOptions: data.ramOptions || [],
           driveOptions: data.driveOptions || [],
           operatingSystems,
@@ -89,6 +89,12 @@ export class LookupService {
         };
       });
 
+      companies.sort((a, b) => {
+        const orderA = typeof a.sortOrder === 'number' ? a.sortOrder : 9999;
+        const orderB = typeof b.sortOrder === 'number' ? b.sortOrder : 9999;
+        return orderA - orderB;
+      });
+
       this._companies.set(companies);
     } catch (err) {
       console.error('Error fetching companies:', err);
@@ -97,47 +103,53 @@ export class LookupService {
     }
   }
 
-async createCompany(companyData: Partial<Company> = {}): Promise<string | null> {
-  this.loading.show();
-  try {
-    // Merge provided data with default
-    const dataToSave: Omit<Company, 'id'> = {
-      ...DEFAULT_COMPANY_DATA,
-      ...companyData,
-    };
+  async createCompany(companyData: Partial<Company> = {}): Promise<string | null> {
+    this.loading.show();
+    try {
+      // Merge provided data with default
+      const dataToSave: Omit<Company, 'id'> = {
+        ...DEFAULT_COMPANY_DATA,
+        ...companyData,
+      };
 
-    // Add the document without id
-    const docRef = await addDoc(collection(db, 'companies'), dataToSave);
+      // Add the document without id
+      const docRef = await addDoc(collection(db, 'companies'), dataToSave);
 
-    // Update the same doc to include its id inside
-    await updateDoc(docRef, { id: docRef.id });
+      // Update the same doc to include its id inside
+      await updateDoc(docRef, { id: docRef.id });
 
-    // Update local state
-    this._companies.update((prev) => [
-      ...prev,
-      { id: docRef.id, ...dataToSave },
-    ]);
+      // Update local state
+      this._companies.update((prev) => [
+        ...prev,
+        { id: docRef.id, ...dataToSave },
+      ]);
 
-    return docRef.id;
-  } catch (err) {
-    console.error('Error creating company:', err);
-    return null;
-  } finally {
-    this.loading.hide();
+      return docRef.id;
+    } catch (err) {
+      console.error('Error creating company:', err);
+      return null;
+    } finally {
+      this.loading.hide();
+    }
   }
-}
- 
-// Get all company without any filter
- async getAllCompanies(): Promise<Company[]> {
+
+  // Get all company without any filter
+  async getAllCompanies(): Promise<Company[]> {
     const companies: Company[] = [];
     const querySnapshot = await getDocs(collection(db, 'companies'));
     querySnapshot.forEach((docSnap) => {
       companies.push({ id: docSnap.id, ...docSnap.data() } as Company);
     });
+
+    companies.sort((a, b) => {
+      const orderA = typeof a.sortOrder === 'number' ? a.sortOrder : 9999;
+      const orderB = typeof b.sortOrder === 'number' ? b.sortOrder : 9999;
+      return orderA - orderB;
+    });
     return companies;
   }
 
-  
+
   getCompanyById(id: string): Company | undefined {
     return this._companies().find((c) => c.id === id);
   }

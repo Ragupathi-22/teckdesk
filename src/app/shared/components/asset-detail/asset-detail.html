@@ -21,7 +21,7 @@
         <div><strong>Name:</strong> {{ asset?.name || '-' }}</div>
         <div><strong>Model:</strong> {{ asset?.model || '-' }}</div>
         <div><strong>Tag Number:</strong> {{ asset?.tag || '-' }}</div>
-        <div><strong>Status:</strong> {{ asset?.status || '-' }}</div>
+        <div><strong>Status:</strong> {{ getStatusLabel(asset?.status) || '-' }}</div>
         <div><strong>Assigned To:</strong> {{ asset?.assignedToName || '-' }}</div>
         <div><strong>Operating System:</strong> {{ asset?.os || '-' }}</div>
         <div><strong>Version:</strong> {{ asset?.osVersion || '-' }}</div>

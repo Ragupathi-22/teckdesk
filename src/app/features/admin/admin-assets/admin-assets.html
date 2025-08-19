@@ -37,7 +37,7 @@
           <lucide-icon [name]="LucideIcon.Search" class="text-gray-400 w-4 h-4" />
         </div>
         <input type="text" placeholder="Search by name, model, tag, assigned to..." [formControl]="searchControl"
-          class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-400" />
       </div>
       <div class="flex space-x-4">
 
@@ -47,7 +47,7 @@
             class="block border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none">
             <option value="All">All Status</option>
             @for (status of filteredStatus; track $index) {
-            <option [value]="status.status">{{ status.status }}</option>}
+            <option [value]="status.id">{{ status.status }}</option>}
           </select>
         </div>
       </div>
@@ -79,13 +79,13 @@
             <td class="px-6 py-4 text-sm text-gray-500">{{ asset.tag }}</td>
             <!-- <td class="px-6 py-4 text-sm text-gray-500">{{ asset.team }}</td> -->
             <td class="px-6 py-4 text-sm text-gray-500">
-              {{ getEmployeeById(asset.assignedTo)?.team || '-' }}
+              {{ getTeamById(getEmployeeById(asset.assignedTo)?.team) || '-' }}
             </td>
 
             <td class="px-6 py-4">
               <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                 [ngStyle]="{ 'background-color': getStatusColor(asset.status), 'color': 'white' }">
-                {{ asset.status }}
+                {{ getStatusLabel(asset.status) }}
               </span>
 
             </td>
@@ -194,7 +194,7 @@
               class="w-full border p-2 rounded-md">
               <option value="">Select Status</option>
               @for (status of filteredStatus; track $index) {
-              <option [value]="status.status">{{ status.status }}</option>
+              <option [value]="status.id">{{ status.status }}</option>
               }
             </select>
 

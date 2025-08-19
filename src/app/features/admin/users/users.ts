@@ -143,6 +143,10 @@ export class Users implements OnInit {
       });
   }
 
+  getTeamById(teamId?: string) {
+    if (!teamId) return;
+    return this.dataService.getTeamByTeamId(teamId);
+  }
 
   get paginatedUsers() {
     return computed(() => {
@@ -166,7 +170,7 @@ export class Users implements OnInit {
     this.showForm.set(true);
     // ✅ Set default team if teams are available
     if (this.filteredTeams.length) {
-      this.userForm.patchValue({ team: this.filteredTeams[0].team });
+      this.userForm.patchValue({ team: this.filteredTeams[0].id });
     }
   }
 
@@ -375,54 +379,60 @@ export class Users implements OnInit {
 
   //For Excel
 
-  generateExcel() {
-    try {
-      this.loadingService.show();
+generateExcel() {
+  try {
+    this.loadingService.show();
 
-      const users = this.filteredUsers();
+    const users = this.filteredUsers();
 
-      const dataForExcel = users.map(user => ({
-        Name: user.name || '',
-        Email: user.email || '',
-        Team: user.team || '',
-        Role: user.role || '',
-        Date_Of_Join: user.dateOfJoining || ''
-      }));
+    const dataForExcel = users.map(user => ({
+      Name: user.name || '',
+      Email: user.email || '',
+      // ✅ Convert team ID to readable name
+      Team: this.dataService.getTeamByTeamId(user.team) || '',
+      Role: user.role || '',
+      Date_Of_Join: user.dateOfJoining || ''
+    }));
 
-      const worksheet = XLSX.utils.aoa_to_sheet([
-        [`User Details: ${this.selectedCompany?.name || ''}`],
-        [`Team Filter: ${this.filterTeamControl.value || 'All'}`],
-        [`Generated on: ${new Date().toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric'
-        })}`]
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      [`User Details: ${this.selectedCompany?.name || ''}`],
+      // ✅ Also convert team filter ID to name in the header
+      [`Team Filter: ${
+        this.filterTeamControl.value && this.filterTeamControl.value !== 'All'
+          ? this.dataService.getTeamByTeamId(this.filterTeamControl.value)
+          : 'All'
+      }`],
+      [`Generated on: ${new Date().toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      })}`]
+    ]);
 
-      ]);
+    XLSX.utils.sheet_add_json(worksheet, dataForExcel, { origin: 'A4' });
 
-      XLSX.utils.sheet_add_json(worksheet, dataForExcel, { origin: 'A4' });
+    const totalCols = Object.keys(dataForExcel[0] || {}).length;
+    worksheet['!merges'] = worksheet['!merges'] || [];
+    worksheet['!merges'].push({
+      s: { r: 0, c: 0 },
+      e: { r: 0, c: totalCols - 1 }
+    });
 
-      const totalCols = Object.keys(dataForExcel[0] || {}).length;
-      worksheet['!merges'] = worksheet['!merges'] || [];
-      worksheet['!merges'].push({
-        s: { r: 0, c: 0 },
-        e: { r: 0, c: totalCols - 1 }
-      });
+    worksheet['!cols'] = Array(totalCols).fill({ wch: 20 });
 
-      worksheet['!cols'] = Array(totalCols).fill({ wch: 20 });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
 
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(workbook, `users_${dateStr}.xlsx`);
 
-      const dateStr = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(workbook, `users_${dateStr}.xlsx`);
-
-    } catch (err) {
-      console.error(err);
-      this.toastr.error('Failed to generate Excel');
-    } finally {
-      this.loadingService.hide();
-    }
+  } catch (err) {
+    console.error(err);
+    this.toastr.error('Failed to generate Excel');
+  } finally {
+    this.loadingService.hide();
   }
+}
+
 
 }

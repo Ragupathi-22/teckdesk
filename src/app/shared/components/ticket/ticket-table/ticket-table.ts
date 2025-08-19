@@ -4,6 +4,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Ticket } from '../../../../core/models/ticket.model';
 import { LucideAngularModule } from 'lucide-angular';
 import { LucideIconCollection } from '../../../icons/lucide-icons';
+import { DataService } from '../../../../core/services/data.service';
 
 
 
@@ -22,7 +23,7 @@ LucideIcon =LucideIconCollection;
 
 @Output() viewDetail = new EventEmitter<Ticket>();
 @Output() deleteTicket = new EventEmitter<Ticket>();
-
+private dataService = inject(DataService);
 currentPage = 1;
 pageSize = 10;
 
@@ -46,6 +47,24 @@ formatDate(timestamp: any): string {
     minute: '2-digit',    // 30
     hour12: true          // PM
   });
+}
+
+
+getTicketCategoryLabel(categoryId: string): string {
+  return this.dataService.getTicketCategory()
+    .find(c => c.id === categoryId)?.category || '';
+}
+getTeamLabel(teamId?: string): string {
+  return this.dataService.getTeams().find(t => t.id === teamId)?.team || '-';
+}
+getTicketStatusLabel(statusId: string): string {
+  return this.dataService.getTicketStatus()
+    .find(s => s.id === statusId)?.status || '';
+}
+
+getTicketStatusColor(statusId: string): string {
+  return this.dataService.getTicketStatus()
+    .find(s => s.id === statusId)?.color || 'gray';
 }
 
 

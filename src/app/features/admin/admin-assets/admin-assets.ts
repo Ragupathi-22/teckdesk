@@ -80,6 +80,9 @@ export class AdminAssets implements OnInit, OnDestroy {
   currentPage = signal(1);
   today = new Date();
 
+  private lastVisibleDoc: any = null; // to hold last loaded document snapshot
+  private allAssetsLoaded = false; // flag to indicate if all assets are loaded
+
   ngOnInit(): void {
     this.selectedCompany = this.dataService.getCompany();
     this.filteredStatus = this.selectedCompany?.assetStatus || [];
@@ -154,6 +157,10 @@ export class AdminAssets implements OnInit, OnDestroy {
 
   }
 
+  getTeamById(teamid?: string) {
+    if (!teamid) return '';
+    return this.dataService.getTeamByTeamId(teamid);
+  }
   ngOnDestroy(): void {
     // Clean up event listener
     document.removeEventListener('click', this.onDocumentClick.bind(this));
@@ -235,8 +242,11 @@ export class AdminAssets implements OnInit, OnDestroy {
     return this.employeesByCompany().find(emp => emp.id === id);
   }
   getStatusColor(status: string): string {
-    const match = this.selectedCompany?.assetStatus?.find(s => s.status === status);
+    const match = this.selectedCompany?.assetStatus?.find(s => s.id === status);
     return match?.color || '#9CA3AF'; // fallback to gray-400 if not found
+  }
+  getStatusLabel(statusId: string): string {
+    return this.selectedCompany?.assetStatus.find(s => s.id === statusId)?.status || '';
   }
 
   addHistory() {
@@ -554,6 +564,7 @@ export class AdminAssets implements OnInit, OnDestroy {
       Object.keys(asset).forEach(key => availableKeys.add(key));
     });
 
+
     // First add in AssetModel order
     this.excelFields = [...AssetFields.DEFAULT_EXCEL_FIELDS]
       .filter(field => availableKeys.has(field.key as string))
@@ -561,13 +572,19 @@ export class AdminAssets implements OnInit, OnDestroy {
         key: field.key as string,
         selected: field.selected
       }));
-
+      
     // Then append any extra Firestore fields not in DEFAULT_EXCEL_FIELDS
     Array.from(availableKeys).forEach(key => {
       if (!this.excelFields.find(f => f.key === key)) {
         this.excelFields.push({ key, selected: true });
       }
     });
+
+        // ✅ Always include 'team' field if not already present
+    if (!this.excelFields.find(f => f.key === 'team')) {
+      this.excelFields.push({ key: 'team', selected: true });
+    }
+
   }
 
 
@@ -616,6 +633,15 @@ export class AdminAssets implements OnInit, OnDestroy {
         selectedFields.forEach(key => {
           let value = (asset as any)[key];
 
+          if (key === 'team') {
+            const emp = this.getEmployeeById(asset.assignedTo);
+            if (emp?.team) {
+              value = this.getTeamById(emp.team); // maps team ID to team name
+            } else {
+              value = '';
+            }
+          }
+
           // Flatten arrays for export
           if (key === 'history' && Array.isArray(value)) {
             value = value.map((h: any) => `${h.note} (${h.date})`).join('; ');
@@ -623,6 +649,7 @@ export class AdminAssets implements OnInit, OnDestroy {
           if (key === 'installedSoftware' && Array.isArray(value)) {
             value = value.map((s: any) => `${s.name} ${s.version || ''}`).join('; ');
           }
+
 
           // Use label if available, fallback to key
           const label = [...AssetFields.DEFAULT_EXCEL_FIELDS].find(f => f.key === key)?.label
@@ -710,7 +737,7 @@ export class AdminAssets implements OnInit, OnDestroy {
   // Signal to control modal visibility and hold the asset to print
   printModalOpen = signal(false);
   printAsset = signal<any | null>(null);
-  
+
   async openPrintModal(asset: any) {
     this.printAsset.set(asset);
     this.printModalOpen.set(true);
